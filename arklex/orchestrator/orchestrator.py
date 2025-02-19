@@ -31,7 +31,6 @@ from arklex.utils.model_config import MODEL
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-
 class AgentOrg:
     def __init__(self, config, env: Env, **kwargs):
         if isinstance(config, dict):
@@ -163,7 +162,6 @@ class AgentOrg:
             version=self.product_kwargs.get("version", "default"),
             language=self.product_kwargs.get("language", "EN"),
             bot_type=self.product_kwargs.get("bot_type", "presalebot"),
-            available_workers=self.product_kwargs.get("workers", [])
         )
         message_state = MessageState(
             sys_instruct=sys_instruct, 
