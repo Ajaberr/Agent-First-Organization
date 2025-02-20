@@ -8,7 +8,7 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Hello! What do you want to test?",
+                    "value": "Hello! Welcome to our store! How can I help you today?",
                     "task": "start message",
                     "directed": false
                 },
@@ -28,7 +28,8 @@
                     "task": "chat with human",
                     "directed": false
                 },
-                "limit": 1
+                "limit": 10,
+                "type": "human"
             }
         ],
         [
@@ -50,12 +51,27 @@
             "3",
             {
                 "resource": {
+                    "id": "12347724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
+                },
+                "attribute": {
+                    "value": "",
+                    "task": "Answer user's question about general customer service",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "4",
+            {
+                "resource": {
                     "id": "9aa47724-0b77-4752-9528-cf4d06a46f15",
                     "name": "MessageWorker"
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Summarize the human experience",
+                    "task": "",
                     "directed": false
                 },
                 "limit": 1
@@ -67,7 +83,7 @@
             "0",
             "1",
             {
-                "intent": "User want to know whether user wants to test chat",
+                "intent": "User want to talk to real human",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
@@ -80,7 +96,7 @@
             "0",
             "2",
             {
-                "intent": "User want to know whether user wants to test confirmation",
+                "intent": "User want to test confirmation",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
@@ -90,10 +106,10 @@
             }
         ],
         [
-            "1",
+            "0",
             "3",
             {
-                "intent": "",
+                "intent": "User has question about general products information",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
@@ -104,25 +120,35 @@
         ],
         [
             "2",
-            "3",
+            "4",
             {
-                "intent": "",
+                "intent": "none",
                 "attribute": {
                     "weight": 1,
-                    "pred": true,
+                    "pred": false,
                     "definition": "",
                     "sample_utterances": []
                 }
             }
         ]
     ],
-    "role": "human-in-the-loop (HITL) test",
-    "user_objective": "The user wants to test human-in-the-loop (HITL).",
-    "builder_objective": "",
-    "domain": "Test",
-    "intro": "This is a human-in-the-loop (HITL) test to test HITL capabilities.",
-    "task_docs": [],
-    "rag_docs": [],
+    "role": "customer service assistant",
+    "user_objective": "The customer service assistant helps users with customer service inquiries. It can provide information about products, services, and policies, as well as help users resolve issues and complete transactions.",
+    "builder_objective": "The customer service assistant helps to request customer's contact information.",
+    "domain": "robotics and automation",
+    "intro": "Richtech Robotics's headquarter is in Las Vegas; the other office is in Austin. Richtech Robotics provide worker robots (ADAM, ARM, ACE), delivery robots (Matradee, Matradee X, Matradee L, Richie), cleaning robots (DUST-E SX, DUST-E MX) and multipurpose robots (skylark). Their products are intended for business purposes, but not for home purpose; the ADAM robot is available for purchase and rental for multiple purposes. This robot bartender makes tea, coffee and cocktails. Richtech Robotics also operate the world's first robot milk tea shop, ClouTea, in Las Vegas (www.cloutea.com), where all milk tea beverages are prepared by the ADAM robot. The delivery time will be one month for the delivery robot, 2 weeks for standard ADAM, and two months for commercial cleaning robot. ",
+    "task_docs": [
+        {
+            "source": "https://www.richtechrobotics.com/",
+            "num": 20
+        }
+    ],
+    "rag_docs": [
+        {
+            "source": "https://www.richtechrobotics.com/",
+            "num": 20
+        }
+    ],
     "tasks": [],
     "tools": [],
     "workers": [
@@ -142,6 +168,11 @@
             "name": "HITLWorkerMCFlag",
             "path": "hitl_worker.py",
             "fixed_args": {}
+        },
+        {
+            "id": "12347724-0b77-4752-9528-cf4b06a46915",
+            "name": "FaissRAGWorker",
+            "path": "faiss_rag_worker.py"
         }
     ],
     "nluapi": "",
