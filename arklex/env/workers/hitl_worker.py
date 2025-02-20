@@ -24,25 +24,38 @@ class HITLWorker(BaseWorker):
                 
         self.action_graph = self._create_action_graph()
 
-    def verify_literal(self, message: str) -> bool:
-        ''' Override this method to allow verification on just the message with slotfilling'''
-        return True
+    def verify_literal(self, state: MessageState) -> tuple[bool, str]:
+        """Override this method to allow verification on the message, either orchestrator's message or user's message
+        Case: user's message
+        Before the bot generate the response for the user's query, the framework decide whether it need to call human for the help because the user directly request so
+        Case: orchestrator's message
+        After the bot generate the response for the user's query, the framework decide whether it need to call human for the help because of the low confidence of the bot's response
+
+        Args:
+            message (str): _description_
+
+        Returns:
+            tuple[bool, str]: _description_
+        """
+        return True, ""
     
-    def verify_slots(self, message) -> bool:
+    def verify_slots(self, message) -> tuple[bool, str]:
         ''' Override this method to allow verification on the slots'''
-        return True
+        return True, ""
     
-    def verify(self, state: MessageState) -> bool:
+    def verify(self, state: MessageState) -> tuple[bool, str]:
         ''' Override this method to allow advanced verification on MessageState object'''
-        if not self.verify_literal(state['user_message'].message):
-            return False
+        need_hitl, message_literal = self.verify_literal(state)
+        if need_hitl:
+            return True, message_literal
         
-        if not self.verify_slots(state['slots']):
-            return False
+        need_hitl, message_slot = self.verify_slots(state['slots'])
+        if need_hitl:
+            return True, message_slot
         
-        return True
+        return False, ""
     
-    def initialize_slotfillapi(self, slotsfillapi):
+    def init_slotfilling(self, slotsfillapi):
         self.slotfillapi = SlotFilling(slotsfillapi)
         
     def create_prompt(self):
@@ -94,10 +107,17 @@ class HITLWorker(BaseWorker):
         state['response'] = result
         return state
         
-    def error(self, state: MessageState) -> str:
-        ''' Error function '''
-        state['response'] = "An Error occurred, please try again"
-        state["isComplete"] = False
+    def fallback(self, state: MessageState) -> MessageState:
+        """The message of the fallback
+
+        Args:
+            state (MessageState): _description_
+
+        Returns:
+            : 
+        """
+        state['message_flow'] = "The user don't need human help"
+        state['status'] = StatusEnum.COMPLETE.value
         return state
             
     def _create_action_graph(self):
@@ -118,6 +138,19 @@ class HITLWorker(BaseWorker):
     
 @register_worker
 class HITLWorkerTestChat(HITLWorker):
+    """This worker is designed to start live chat locally
+    Status: Not in use (as of 2025-02-20)
+
+    Args:
+        HITLWorker (_type_): _description_
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     description = "Chat with a real end user"
     mode = "chat"
     
@@ -135,6 +168,16 @@ class HITLWorkerTestChat(HITLWorker):
     
 @register_worker
 class HITLWorkerTestMC(HITLWorker):
+    """This worker is designed to start multiple choice human-in-the-loop worker locally
+    Status: Not in use (as of 2025-02-20)
+
+    Args:
+        HITLWorker (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     description = "Get confirmation from a real end user in purchasing"
     mode = "mc"
     params = {
@@ -158,30 +201,63 @@ class HITLWorkerTestMC(HITLWorker):
     
 @register_worker
 class HITLWorkerChatFlag(HITLWorker):
+    """This worker is designed to start live chat with another built server. 
+    So it will return the indicator of what type of human help needed.
+
+    Args:
+        HITLWorker (_type_): _description_
+
+    Returns:
+        MessageState: with hitl value in the MessageState[metadata]
+    """
     description = "Human in the loop worker"
     mode = "chat"
     
-    def verify_literal(self, message: str) -> bool:
-        return "live" in message
+    def verify_literal(self, state: MessageState) -> bool:
+        """[TODO] Need to implement for orchestrator message as well
+        (as of 2025-02-20)
+        This method is to check the message from the user, since in the NLU, we already determine that the user wants to chat with the human in the loop.
+
+        Args:
+            message (str): _description_
+
+        Returns:
+            bool: _description_
+        """
+        message = "I'll connect you to a representative!"
+
+        return True, message
     
     def execute(self, state: MessageState) -> MessageState:
         if not state['metadata'].get('hitl'):
-            if not self.verify(state):
-                return self.error(state)
-            state['response'] = '[[Connecting to live chat : this should not show up for user]]'
-            state['metadata']['hitl'] = 'mc'
+            need_hitl, message = self.verify(state)
+            if not need_hitl:
+                return self.fallback(state)
+            state["message_flow"] = message
+            state['metadata']['hitl'] = 'live'
             state['status'] = StatusEnum.INCOMPLETE.value
         
         else:
-            state['response'] = 'Live chat completed'
+            state['message_flow'] = 'Live chat completed'
             state['metadata']['hitl'] = None
             state['status'] = StatusEnum.COMPLETE.value
         
-        logger.info(state['response'])
+        logger.info(state['message_flow'])
         return state
     
 @register_worker
 class HITLWorkerMCFlag(HITLWorker):
+    """This worker is designed to start live chat with another built server. 
+    So it will return the indicator of what type of human help needed.
+    Status: Not in use (as of 2025-02-20)
+
+    Args:
+        HITLWorker (_type_): _description_
+
+    Returns:
+        MessageState: with hitl value in the MessageState[metadata]
+    """
+
     description = "Get confirmation from a real end user in purchasing"
     mode = "mc"
     params = {

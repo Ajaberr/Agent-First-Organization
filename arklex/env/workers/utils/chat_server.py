@@ -1,3 +1,17 @@
+"""
+This module is currently inactive.
+
+It is reserved for future use and may contain experimental or planned features.
+
+Status:
+    - Not in use (as of 2025-02-20)
+    - Intended for future feature expansion
+
+Module Name: chat_server
+
+This file contains the code for setting up a chat server that can accept connections from chat clients and broadcast messages to all connected clients.
+"""
+
 import asyncio
 import json
 import sys
