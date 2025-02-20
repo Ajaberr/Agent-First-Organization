@@ -3,7 +3,7 @@ import logging
 from langgraph.graph import StateGraph, START
 
 from arklex.env.workers.worker import BaseWorker, register_worker
-from arklex.utils.graph_state import MessageState
+from arklex.utils.graph_state import MessageState, StatusEnum
 from arklex.env.workers.utils.chat_client import ChatClient
 
 from arklex.orchestrator.NLU.nlu import SlotFilling
@@ -21,14 +21,7 @@ class HITLWorker(BaseWorker):
     # def __init__(self, server_ip: str, server_port: int, name: str):
     def __init__(self, **kwargs):
         super().__init__()
-        
-        self.server_ip = kwargs.get('server_ip')
-        self.server_port = kwargs.get('server_port')
-        self.name = kwargs.get('name')
-        
-        if not self.server_ip or not self.server_port:
-            raise ValueError("Server IP and Port are required")
-        
+                
         self.action_graph = self._create_action_graph()
 
     def verify_literal(self, message: str) -> bool:
@@ -101,7 +94,7 @@ class HITLWorker(BaseWorker):
         state['response'] = result
         return state
         
-    def error(self, state: StateGraph) -> str:
+    def error(self, state: MessageState) -> str:
         ''' Error function '''
         state['response'] = "An Error occurred, please try again"
         state["isComplete"] = False
@@ -128,14 +121,70 @@ class HITLWorkerTestChat(HITLWorker):
     description = "Chat with a real end user"
     mode = "chat"
     
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.server_ip = kwargs.get('server_ip')
+        self.server_port = kwargs.get('server_port')
+        self.name = kwargs.get('name')
+        
+        if not self.server_ip or not self.server_port:
+            raise ValueError("Server IP and Port are required")
+    
     def verify_literal(self, message: str) -> bool:
         return "chat" in message
     
 @register_worker
 class HITLWorkerTestMC(HITLWorker):
-    description="Get confirmation from a real end user in purchasing"
-    mode="mc"
-    params= {
+    description = "Get confirmation from a real end user in purchasing"
+    mode = "mc"
+    params = {
+        "intro": "Should the user continue with this purchase? (Y/N)",
+        "max_retries": 5,
+        'default': 'User is not allowed to continue with the purchase',
+        "choices": {
+            "Y": "User is allowed to continue with the purchase",
+            "N": "User is not allowed to continue with the purchase"
+        }
+    }
+    
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.server_ip = kwargs.get('server_ip')
+        self.server_port = kwargs.get('server_port')
+        self.name = kwargs.get('name')
+    
+    def verify_literal(self, message: str) -> bool:
+        return "buy" in message
+    
+@register_worker
+class HITLWorkerChatFlag(HITLWorker):
+    description = "Human in the loop worker"
+    mode = "chat"
+    
+    def verify_literal(self, message: str) -> bool:
+        return "live" in message
+    
+    def execute(self, state: MessageState) -> MessageState:
+        if not state['metadata'].get('hitl'):
+            if not self.verify(state):
+                return self.error(state)
+            state['response'] = '[[Connecting to live chat : this should not show up for user]]'
+            state['metadata']['hitl'] = 'mc'
+            state['status'] = StatusEnum.INCOMPLETE.value
+        
+        else:
+            state['response'] = 'Live chat completed'
+            state['metadata']['hitl'] = None
+            state['status'] = StatusEnum.COMPLETE.value
+        
+        logger.info(state['response'])
+        return state
+    
+@register_worker
+class HITLWorkerMCFlag(HITLWorker):
+    description = "Get confirmation from a real end user in purchasing"
+    mode = "mc"
+    params = {
         "intro": "Should the user continue with this purchase? (Y/N)",
         "max_retries": 5,
         'default': 'User is not allowed to continue with the purchase',
@@ -147,3 +196,34 @@ class HITLWorkerTestMC(HITLWorker):
     
     def verify_literal(self, message: str) -> bool:
         return "buy" in message
+    
+    def execute(self, state: MessageState) -> MessageState:
+        if not state['metadata'].get('hitl'):
+            if not self.verify(state):
+                return self.error(state)
+            state['response'] = '[[sending confirmation : this should not show up for user]]'
+            state['metadata']['hitl'] = 'mc'
+            state['metadata]']['attempts'] = self.params.get("max_retries", 3)
+            state['status'] = StatusEnum.INCOMPLETE.value
+        
+        else:
+            result = self.params["choices"].get(state.user_message.message) # not actually user message but system confirmation
+            
+            if result:
+                state['response'] = result
+                state['metadata']['hitl'] = None
+                state['status'] = StatusEnum.COMPLETE.value
+                return state
+            
+            state['metadata]']['attempts'] -= 1
+            if state['metadata]']['attempts'] <= 0:
+                state['response'] = self.params['default']
+                state['metadata']['hitl'] = None
+                state['status'] = StatusEnum.COMPLETE.value
+                return state
+                    
+            state['response'] = '[[sending confirmation : this should not show up for user]]'
+            state['metadata']['hitl'] = 'mc'
+            state['status'] = StatusEnum.INCOMPLETE.value
+            
+        return state

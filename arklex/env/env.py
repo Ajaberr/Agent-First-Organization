@@ -103,7 +103,6 @@ class Env():
             worker = self.workers[id]["execute"]()
             if hasattr(worker, "init_slotfilling"):
                 worker.initialize_slotfillapi(self.slotfillapi)
-            print(worker.execute)
             response_state = worker.execute(message_state)
             call_id = str(uuid.uuid4())
             params["history"].append({'content': None, 'role': 'assistant', 'tool_calls': [{'function': {'arguments': "", 'name': self.id2name[id]}, 'id': call_id, 'type': 'function'}], 'function_call': None})
@@ -113,6 +112,7 @@ class Env():
                 "name": self.id2name[id],
                 "content": response_state["response"]
             })
+            params["node_status"][params.get("curr_node")] = response_state.get("status", StatusEnum.COMPLETE.value)
         else:
             logger.info("planner selected")
             action, response_state, msg_history = self.planner.execute(message_state, params["history"])

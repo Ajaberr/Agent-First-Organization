@@ -179,6 +179,7 @@ class AgentOrg:
         response_state, params = self.env.step(node_info["id"], message_state, params)
         
         logger.info(f"{response_state=}")
+        logger.info(f"{params=}")
 
         tool_response = params.get("metadata", {}).get("tool_response", {})
         params["metadata"]["tool_response"] = {}
@@ -271,7 +272,8 @@ class AgentOrg:
         params["tool_response"] = tool_response
         output = {
             "answer": response,
-            "parameters": params
+            "parameters": params,
+            "human-in-the-loop": params['metadata'].get('hitl', None),
         }
 
         with ls.trace(name=TraceRunName.OrchestResponse) as rt:
