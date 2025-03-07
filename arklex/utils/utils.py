@@ -123,11 +123,5 @@ def format_truncated_chat_history(chat_history, max_length=400):
         chat_history_str += f"{turn['role']}: {truncate_string(turn['content'], max_length) if turn['content'] else turn['content']}\n"
     return chat_history_str.strip()
 
-def format_messages_by_provider(messages, text, model=MODEL):
-    llm_provider = model['llm_provider']
-    if llm_provider == "anthropic":
-        return {"system": f"{messages[0]['content']}"}
-    elif llm_provider == 'gemini':
-        messages.append({"role": "user", "content": f"{text}"})
-    return {"messages": messages}
+
    

@@ -9,16 +9,17 @@ import string
 
 from openai.lib._parsing import parse_chat_completion
 from openai._types import NOT_GIVEN
-import litellm
-from litellm import completion
 from fastapi import FastAPI, Response
 
 from arklex.utils.graph_state import Slots, Slot, Verification
 from dotenv import load_dotenv
 load_dotenv()
 
-from arklex.utils.utils import format_messages_by_provider
 from arklex.utils.model_config import MODEL
+from arklex.utils.model_provider_config import PROVIDER_MAP
+from langchain_openai import ChatOpenAI
+from langchain_core.output_parsers.openai_tools import  JsonOutputToolsParser
+import re
 import google.generativeai as genai
 
 
@@ -35,32 +36,19 @@ class NLUModelAPI ():
     def get_response(self, sys_prompt, model, response_format="text", debug_text="none",  text=""):
         logger.info(f"gpt system_prompt for {debug_text} is \n{sys_prompt}")
         dialog_history = [{"role": "system", "content": sys_prompt}]
-        litellm.modify_params=True
-        if model['llm_provider'] == 'gemini':
-            genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-            llm = genai.GenerativeModel(
-                f"models/{model['model_type_or_path']}",
-                system_instruction=sys_prompt,
-                 generation_config=genai.GenerationConfig(
-                temperature = 0.7, candidate_count = 1, response_mime_type = ' application/json' if response_format == "json" else 'text/plain'
-                ))
-            response = llm.generate_content(" ").text
-        else:
-            res = completion(
-                    model=model["model_type_or_path"],
-                    custom_llm_provider=model["llm_provider"],
-                    response_format={"type": "json_object"} if response_format=="json" else {"type": "text"},
-                    **format_messages_by_provider(dialog_history, text),
-                    n=1,
-                    temperature = 0.7,
-                )
-            response = res.choices[0].message.content
-            if model['llm_provider'] == 'anthropic':
-                    response_data = json.loads(response)
-                    response = response_data.get('intent', '')
+        kwargs = {'model': MODEL["model_type_or_path"], 'temperature': 0.7}
+        
+        if MODEL['llm_provider'] != 'anthropic': kwargs['n'] = 1
+        llm = PROVIDER_MAP.get(MODEL['llm_provider'], ChatOpenAI)(**kwargs)
 
-        logger.info(f"response for {debug_text} is \n{response}")
-        return response
+        if MODEL['llm_provider'] == 'openai':
+            llm = llm.bind(response_format={"type": "json_object"} if response_format == "json" else {"type": "text"})
+            res = llm.invoke(dialog_history)
+        else:
+            messages = [("user", f"{dialog_history[0]['content']} Only choose the option letter, no explanation.")]
+            res = llm.invoke(messages)
+        
+        return res.content
 
     def format_input(self, intents, chat_history_str) -> str:
         """Format input text before feeding it to the model."""
@@ -148,24 +136,40 @@ class SlotFillModelAPI():
     def get_response(self, sys_prompt,model, debug_text="none", text=" ", format=Slots):
         logger.info(f"gpt system_prompt for {debug_text} is \n{sys_prompt}")
         dialog_history = [{"role": "system", "content": sys_prompt}]
-        res = completion(
-            model=model["model_type_or_path"],
-            custom_llm_provider=model["llm_provider"],
-            response_format=format,
-            **format_messages_by_provider(dialog_history, text, model),
-            n=1,
-            temperature = 0.7,
-        )
-        res.choices[0].message.refusal = None       
-        parsed = parse_chat_completion(response_format=format,
-                                    input_tools = NOT_GIVEN,
-                                 chat_completion=res)
+        kwargs = {'model': MODEL["model_type_or_path"], 'temperature': 0.7}
+        # set number of chat completions to generate, isn't supported by Anthropic
+        if MODEL['llm_provider'] != 'anthropic': kwargs['n'] = 1
+        llm = PROVIDER_MAP.get(MODEL['llm_provider'], ChatOpenAI)(**kwargs)
         
-        response = parsed.choices[0].message
-        if (response.refusal):
-            return None
-        logger.info(f"response for {debug_text} is \n{response.parsed}")
-        return response.parsed
+        if MODEL['llm_provider'] == 'openai':
+            llm = llm.with_structured_output(schema=format)
+            response = llm.invoke(dialog_history)
+        #for claude & gemini
+        else:
+            messages = [{"role": "user", "content": dialog_history[0]['content']}]
+            llm = llm.bind_tools([format])
+            chain =  llm | JsonOutputToolsParser()
+            res = chain.invoke(messages)
+            if not res:
+                logger.warning(f"Empty response for {debug_text}. Returning empty Slots object.")
+                response = Slots(slots=[])
+            else:
+                properties = res[0]['args']['properties']
+        
+                if isinstance(properties, str):
+                    try:
+                        properties = re.sub(r'\\(?![\"\\/bfnrtu])', r'\\\\', properties)
+                        properties = json.loads(properties)
+                    except json.JSONDecodeError as e:
+                        print(f"Error parsing JSON: {e}")
+                        return None
+
+                slots_data = properties.get('slots', [])
+                response = Slots(slots=[Slot(**slot) for slot in slots_data])
+            
+
+        logger.info(f"response for {debug_text} is \n{response}")
+        return response
 
     def format_input(self, slots: Slots, chat_history_str) -> str:
         """Format input text before feeding it to the model."""
