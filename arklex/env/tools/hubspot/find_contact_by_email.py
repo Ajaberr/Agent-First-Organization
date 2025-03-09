@@ -79,9 +79,9 @@ def find_contact_by_email(email: str, chat: str, **kwargs) -> str:
             )
             contact_info_properties = {
                 'id': contact_id,
-                'email': email,
-                'first_name': contact_search_response['results'][0]['properties'].get('firstname'),
-                'last_name': contact_search_response['results'][0]['properties'].get('lastname')
+                'email': email
+                # 'first_name': contact_search_response['results'][0]['properties'].get('firstname'),
+                # 'last_name': contact_search_response['results'][0]['properties'].get('lastname')
             }
             try:
                 communication_creation_response = api_client.crm.objects.communications.basic_api.create(communication_data)
