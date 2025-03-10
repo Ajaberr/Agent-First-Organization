@@ -1,3 +1,5 @@
+import json
+
 from ..tools import register_tool, logger
 import ast
 import hubspot
@@ -39,12 +41,12 @@ slots = [
         "name": "meeting_start_time",
         "type": "string",
         "description": "The exact start time the customer want to take meeting with the representative. e.g. 1pm",
-        "prompt": "Could you please give me the start time of the meeting?",
+        "prompt": "Could you please give me the start time of the meeting? Typically, the representative will hold the meeting from 9:00 am to 4:45 pm.",
         "required": True,
     },
     {
         "name": "duration",
-        "type": "int",
+        "type": "integer",
         "enum": [15, 30, 60],
         "description": "The exact duration of the meeting",
         "prompt": "Could you please give me the duration of the meeting (e.g. 15, 30, 60 mins)?",
@@ -97,7 +99,9 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
 
     meeting_date = parse_natural_date(meeting_date, timezone=time_zone)
+    pprint('meeting_date: {}'.format(meeting_date))
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
+    pprint('meeting_start_time: {}'.format(meeting_start_time))
     meeting_start_time = int(meeting_start_time.timestamp() * 1000)
     pprint('meeting_start_time: {}'.format(meeting_start_time))
 
@@ -112,10 +116,11 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
     meeting_slug = meeting_link_related_info.get('slug')
     unavailable_time_slots = meeting_link_related_info.get('busy_time_slots_unix')
 
+    meeting_end_time = meeting_start_time + duration
     for time_slot in unavailable_time_slots:
         if meeting_start_time >= time_slot['start'] and meeting_start_time <= time_slot['end']:
             return UNAVAILABLE_ERROR
-        elif meeting_start_time + duration >= time_slot['start']:
+        elif meeting_end_time >= time_slot['start'] and meeting_end_time <= time_slot['end']:
             return UNAVAILABLE_ERROR
 
     api_client = hubspot.Client.create(access_token=access_token)
@@ -143,44 +148,10 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
         )
         create_meeting_response = create_meeting_response.json()
         pprint(create_meeting_response)
-        return create_meeting_response
+        return json.dumps(create_meeting_response)
     except ApiException as e:
         print(e)
-    # meeting_properties = {
-    #     "hs_meeting_title": f"Meeting between {representative_id} and {customer_contact_id} at {meeting_start_time}",
-    #     "hubspot_owner_id": representative_id,
-    #     "hs_timestamp": meeting_start_time,
-    #     "hs_meeting_start_time": meeting_start_time,
-    #     "hs_meeting_end_time": meeting_end_time,
-    #     "hs_meeting_outcome": "SCHEDULED",
-    #     "hs_meeting_location": "Remote"
-    # }
-    # associaion_info = [
-    #     {
-    #         "to": {
-    #             "id": customer_contact_id
-    #         },
-    #         "types": [
-    #             {
-    #                 "associationCategory": "HUBSPOT_DEFINED",
-    #                 "associationTypeId": 200
-    #             }
-    #         ]
-    #     }
-    # ]
-    # meeting_information = SimplePublicObjectInputForCreate(
-    #     properties=meeting_properties, associations=associaion_info
-    # )
-    # try:
-    #     meeting_creation_response = api_client.crm.objects.meetings.basic_api.create(
-    #         simple_public_object_input_for_create=meeting_information)
-    #     pprint(meeting_creation_response)
-    #     meeting_creation_response = meeting_creation_response.to_dict()
-    #     return meeting_creation_response
-    # except ApiException as e:
-    #     logger.info("Exception when calling Crm.tickets.create: %s\n" % e)
-
-
+   
 def parse_natural_date(date_str, base_date=None, timezone=None):
     cal = parsedatetime.Calendar()
     time_struct, _ = cal.parse(date_str, base_date)
