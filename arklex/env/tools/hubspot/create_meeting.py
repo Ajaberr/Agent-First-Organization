@@ -24,13 +24,6 @@ slots = [
         "required": True,
     },
     {
-        "name": "representative_contact_information",
-        "type": "string",
-        "description": "The detailed information of the representative (actually a dict) is provided",
-        "prompt": "",
-        "required": True,
-    },
-    {
         "name": "meeting_date",
         "type": "string",
         "description": "The exact date the customer want to take meeting with the representative. e.g. today, Next Monday, May 1st.",
@@ -84,8 +77,8 @@ errors = [
 ]
 
 @register_tool(description, slots, outputs, lambda x: x not in errors)
-def create_meeting(customer_contact_information: str, representative_contact_information: str,
-                   meeting_date: str, meeting_start_time: str, duration: int,
+def create_meeting(customer_contact_information: str,meeting_date: str,
+                   meeting_start_time: str, duration: int,
                    meeting_link_related_info: str, time_zone: str, **kwargs) -> str:
     access_token = kwargs.get('access_token')
     if not access_token:
@@ -99,15 +92,15 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
 
     meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
+    pprint('meeting_date: {}'.format(meeting_date))
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
+    pprint('meeting_start_time: {}'.format(meeting_start_time))
     meeting_start_time = int(meeting_start_time.timestamp() * 1000)
+    pprint('meeting_start_time: {}'.format(meeting_start_time))
 
 
     duration = int(duration)
     duration = int(timedelta(minutes=duration).total_seconds() * 1000)
-
-    representative_contact_information = ast.literal_eval(representative_contact_information)
-    representative_id = representative_contact_information.get('owner_id')
 
     meeting_link_related_info = ast.literal_eval(meeting_link_related_info)
     meeting_slug = meeting_link_related_info.get('slug')
@@ -144,10 +137,45 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
         )
         create_meeting_response = create_meeting_response.json()
+        pprint(create_meeting_response)
         return json.dumps(create_meeting_response)
     except ApiException as e:
         print(e)
-    
+    # meeting_properties = {
+    #     "hs_meeting_title": f"Meeting between {representative_id} and {customer_contact_id} at {meeting_start_time}",
+    #     "hubspot_owner_id": representative_id,
+    #     "hs_timestamp": meeting_start_time,
+    #     "hs_meeting_start_time": meeting_start_time,
+    #     "hs_meeting_end_time": meeting_end_time,
+    #     "hs_meeting_outcome": "SCHEDULED",
+    #     "hs_meeting_location": "Remote"
+    # }
+    # associaion_info = [
+    #     {
+    #         "to": {
+    #             "id": customer_contact_id
+    #         },
+    #         "types": [
+    #             {
+    #                 "associationCategory": "HUBSPOT_DEFINED",
+    #                 "associationTypeId": 200
+    #             }
+    #         ]
+    #     }
+    # ]
+    # meeting_information = SimplePublicObjectInputForCreate(
+    #     properties=meeting_properties, associations=associaion_info
+    # )
+    # try:
+    #     meeting_creation_response = api_client.crm.objects.meetings.basic_api.create(
+    #         simple_public_object_input_for_create=meeting_information)
+    #     pprint(meeting_creation_response)
+    #     meeting_creation_response = meeting_creation_response.to_dict()
+    #     return meeting_creation_response
+    # except ApiException as e:
+    #     logger.info("Exception when calling Crm.tickets.create: %s\n" % e)
+
+
 def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False):
     cal = parsedatetime.Calendar()
     time_struct, _ = cal.parse(date_str, base_date)
@@ -156,14 +184,16 @@ def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False
     else:
         parsed_dt = datetime(*time_struct[:6])
 
+    pprint('parsed_dt: {}'.format(parsed_dt))
     if base_date and (parsed_dt.date() != base_date.date()):
         parsed_dt = datetime.combine(base_date.date(), parsed_dt.time())
-
+    pprint('first if: parsed_dt: {}'.format(parsed_dt))
     # Handle time zone if provided
     if timezone:
         local_timezone = pytz.timezone(timezone)
         parsed_dt = local_timezone.localize(parsed_dt)  # Localize to the specified timezone
         parsed_dt = parsed_dt.astimezone(pytz.utc)  # Convert to UTC
+    pprint('second if: parsed_dt: {}'.format(parsed_dt))
     return parsed_dt
 
 
