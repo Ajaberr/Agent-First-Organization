@@ -99,11 +99,8 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
 
     meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
-    pprint('meeting_date: {}'.format(meeting_date))
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
-    pprint('meeting_start_time: {}'.format(meeting_start_time))
     meeting_start_time = int(meeting_start_time.timestamp() * 1000)
-    pprint('meeting_start_time: {}'.format(meeting_start_time))
 
 
     duration = int(duration)
@@ -147,7 +144,6 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
         )
         create_meeting_response = create_meeting_response.json()
-        pprint(create_meeting_response)
         return json.dumps(create_meeting_response)
     except ApiException as e:
         print(e)
@@ -160,16 +156,14 @@ def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False
     else:
         parsed_dt = datetime(*time_struct[:6])
 
-    pprint('parsed_dt: {}'.format(parsed_dt))
     if base_date and (parsed_dt.date() != base_date.date()):
         parsed_dt = datetime.combine(base_date.date(), parsed_dt.time())
-    pprint('first if: parsed_dt: {}'.format(parsed_dt))
+
     # Handle time zone if provided
     if timezone:
         local_timezone = pytz.timezone(timezone)
         parsed_dt = local_timezone.localize(parsed_dt)  # Localize to the specified timezone
         parsed_dt = parsed_dt.astimezone(pytz.utc)  # Convert to UTC
-    pprint('second if: parsed_dt: {}'.format(parsed_dt))
     return parsed_dt
 
 

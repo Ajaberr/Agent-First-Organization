@@ -53,22 +53,6 @@ def find_owner_by_owner_id(owner_id: str, **kwargs) -> str:
             "owner_last_name": get_owner_response['last_name'],
             "owner_email": get_owner_response['email']
         }
-        pprint(get_owner_response)
         return str(owner_information)
-        # owners_list = get_owner_response._results
-        # index = next((i for i, owner in enumerate(owners_list) if f"{owner.first_name} {owner.last_name}" == owner_full_name), -1)
-        #
-        # if index != -1:
-        #     owner_information = {
-        #         "owner_id": owners_list[index].id,
-        #         "owner_first_name": owners_list[index].first_name,
-        #         "owner_last_name": owners_list[index].last_name,
-        #         "owner_email": owners_list[index].email
-        #     }
-        #
-        #     pprint(owners_response)
-        #     return str(owner_information)
-        # else:
-        #     return OWNER_NOT_FOUND_ERROR
     except ApiException as e:
         logger.info("Exception when calling owner_api: %s\n" % e)

@@ -58,7 +58,6 @@ def check_available(representative_contact_information: str, time_zone: str, mee
     access_token = kwargs.get('access_token')
     representative_contact_information = ast.literal_eval(representative_contact_information)
     representative_id = representative_contact_information.get('owner_id')
-    pprint(f'representative_id: {representative_id}')
     if not access_token:
         return HUBSPOT_AUTH_ERROR
     api_client = hubspot.Client.create(access_token=access_token)
@@ -80,7 +79,6 @@ def check_available(representative_contact_information: str, time_zone: str, mee
             }
         )
         meeting_link_response = meeting_link_response.json()
-        pprint(f'meeting_link_response: {meeting_link_response}')
         if meeting_link_response.get('total') == 0:
             return MEETING_LINK_UNFOUND_ERROR
         else:
@@ -103,15 +101,11 @@ def check_available(representative_contact_information: str, time_zone: str, mee
             cal = parsedatetime.Calendar()
             time_struct, _ = cal.parse(meeting_date)
             meeting_date = datetime(*time_struct[:3])
-            pprint(f'meeting_date: {meeting_date}')
             availability_response = availability_response.json()
-            pprint(f'availability_response: {availability_response}')
             busy_times = availability_response['allUsersBusyTimes'][0]['busyTimes']
-            pprint(f'busy_times: {busy_times}')
             for busy_time in busy_times:
                 start_time = datetime.fromtimestamp(busy_time["start"] / 1000)
                 end_time = datetime.fromtimestamp(busy_time["end"] / 1000)
-                pprint(f'busy_time: {busy_time}')
                 if start_time.date() == meeting_date.date():
                     meeting_link_related_info['busy_time_slots'].append({
                         "start": start_time.isoformat(),
