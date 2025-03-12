@@ -44,7 +44,7 @@ errors = [
 def create_ticket(contact_information: str, issue: str, **kwargs) -> str:
     access_token = kwargs.get('access_token')
     contact_information = ast.literal_eval(contact_information)
-    contact_id = contact_information.get('id')
+    contact_id = contact_information.get('contact_id')
     if not access_token:
         return HUBSPOT_AUTH_ERROR
 
