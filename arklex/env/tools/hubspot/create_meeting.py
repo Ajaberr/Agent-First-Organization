@@ -92,11 +92,8 @@ def create_meeting(customer_contact_information: str,meeting_date: str,
 
 
     meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
-    pprint('meeting_date: {}'.format(meeting_date))
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
-    pprint('meeting_start_time: {}'.format(meeting_start_time))
     meeting_start_time = int(meeting_start_time.timestamp() * 1000)
-    pprint('meeting_start_time: {}'.format(meeting_start_time))
 
 
     duration = int(duration)
@@ -140,40 +137,7 @@ def create_meeting(customer_contact_information: str,meeting_date: str,
         pprint(create_meeting_response)
         return json.dumps(create_meeting_response)
     except ApiException as e:
-        print(e)
-    # meeting_properties = {
-    #     "hs_meeting_title": f"Meeting between {representative_id} and {customer_contact_id} at {meeting_start_time}",
-    #     "hubspot_owner_id": representative_id,
-    #     "hs_timestamp": meeting_start_time,
-    #     "hs_meeting_start_time": meeting_start_time,
-    #     "hs_meeting_end_time": meeting_end_time,
-    #     "hs_meeting_outcome": "SCHEDULED",
-    #     "hs_meeting_location": "Remote"
-    # }
-    # associaion_info = [
-    #     {
-    #         "to": {
-    #             "id": customer_contact_id
-    #         },
-    #         "types": [
-    #             {
-    #                 "associationCategory": "HUBSPOT_DEFINED",
-    #                 "associationTypeId": 200
-    #             }
-    #         ]
-    #     }
-    # ]
-    # meeting_information = SimplePublicObjectInputForCreate(
-    #     properties=meeting_properties, associations=associaion_info
-    # )
-    # try:
-    #     meeting_creation_response = api_client.crm.objects.meetings.basic_api.create(
-    #         simple_public_object_input_for_create=meeting_information)
-    #     pprint(meeting_creation_response)
-    #     meeting_creation_response = meeting_creation_response.to_dict()
-    #     return meeting_creation_response
-    # except ApiException as e:
-    #     logger.info("Exception when calling Crm.tickets.create: %s\n" % e)
+        logger.info("Exception when scheduling a meeting: %s\n" % e)
 
 
 def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False):
@@ -184,16 +148,13 @@ def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False
     else:
         parsed_dt = datetime(*time_struct[:6])
 
-    pprint('parsed_dt: {}'.format(parsed_dt))
     if base_date and (parsed_dt.date() != base_date.date()):
         parsed_dt = datetime.combine(base_date.date(), parsed_dt.time())
-    pprint('first if: parsed_dt: {}'.format(parsed_dt))
-    # Handle time zone if provided
+
     if timezone:
         local_timezone = pytz.timezone(timezone)
-        parsed_dt = local_timezone.localize(parsed_dt)  # Localize to the specified timezone
-        parsed_dt = parsed_dt.astimezone(pytz.utc)  # Convert to UTC
-    pprint('second if: parsed_dt: {}'.format(parsed_dt))
+        parsed_dt = local_timezone.localize(parsed_dt)
+        parsed_dt = parsed_dt.astimezone(pytz.utc)
     return parsed_dt
 
 
