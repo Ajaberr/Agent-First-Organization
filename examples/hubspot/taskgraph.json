@@ -110,21 +110,6 @@
       "7",
       {
         "resource": {
-          "id": "1437160f-6036-4fc9-99db-0e45afabd03c",
-          "name": "find_owner_by_owner_id"
-        },
-        "attribute": {
-          "value": "",
-          "task": "find the owner information by the id",
-          "directed": false
-        },
-        "limit": 1
-      }
-    ],
-    [
-      "8",
-      {
-        "resource": {
           "id": "8a6784c2-a130-4eb4-9924-4f4c58f4bf9d",
           "name": "check_available"
         },
@@ -137,7 +122,7 @@
       }
     ],
     [
-      "9",
+      "8",
       {
         "resource": {
           "id": "e86daf21-41a3-40b2-9695-3ed59be46cc4",
@@ -247,19 +232,6 @@
     [
       "7",
       "8",
-      {
-        "intent": "none",
-        "attribute": {
-          "weight": 1,
-          "pred": true,
-          "definition": "",
-          "sample_utterances": []
-        }
-      }
-    ],
-    [
-      "8",
-      "9",
       {
         "intent": "none",
         "attribute": {
