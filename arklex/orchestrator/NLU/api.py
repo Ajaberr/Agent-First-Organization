@@ -154,7 +154,9 @@ class SlotFillModelAPI():
                 logger.warning(f"Empty response for {debug_text}. Returning empty Slots object.")
                 response = Slots(slots=[])
             else:
-                properties = res[0]['args']['properties']
+                properties = res[0]['args']
+                if 'properties' in properties:
+                    properties = properties['properties']
         
                 if isinstance(properties, str):
                     try:
