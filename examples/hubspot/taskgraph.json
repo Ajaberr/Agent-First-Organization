@@ -256,6 +256,19 @@
           "sample_utterances": []
         }
       }
+    ],
+    [
+      "8",
+      "9",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
     ]
   ],
   "role": "customer service assistant",
