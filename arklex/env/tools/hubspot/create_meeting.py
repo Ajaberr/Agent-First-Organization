@@ -151,7 +151,7 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
         return json.dumps(create_meeting_response)
     except ApiException as e:
         print(e)
-   
+
 def parse_natural_date(date_str, base_date=None, timezone=None):
     cal = parsedatetime.Calendar()
     time_struct, _ = cal.parse(date_str, base_date)
