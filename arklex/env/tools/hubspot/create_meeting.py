@@ -48,14 +48,14 @@ slots = [
         "name": "duration",
         "type": "integer",
         "enum": [15, 30, 60],
-        "description": "The exact duration of the meeting",
+        "description": "The exact duration of the meeting. Please ask the user to input. DO NOT AUTOMATICALLY GIVE THE SLOT ANY VALUE.",
         "prompt": "Could you please give me the duration of the meeting (e.g. 15, 30, 60 mins)?",
         "required": True,
     },
     {
         "name": "meeting_link_related_info",
         "type": "string",
-        "description": "The unavailable time slots of the representative and the corresponding slug.",
+        "description": "The unavailable time slots of the representative and the corresponding slug. This is actually a dict.",
         "prompt": "",
         "required": True,
     },
@@ -98,7 +98,7 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
     customer_email = customer_contact_information.get('contact_email')
 
 
-    meeting_date = parse_natural_date(meeting_date, timezone=time_zone)
+    meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
     pprint('meeting_date: {}'.format(meeting_date))
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
     pprint('meeting_start_time: {}'.format(meeting_start_time))
@@ -118,7 +118,7 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
 
     meeting_end_time = meeting_start_time + duration
     for time_slot in unavailable_time_slots:
-        if meeting_start_time >= time_slot['start'] and meeting_start_time <= time_slot['end']:
+        if meeting_start_time >= time_slot['start'] and meeting_start_time < time_slot['end']:
             return UNAVAILABLE_ERROR
         elif meeting_end_time >= time_slot['start'] and meeting_end_time <= time_slot['end']:
             return UNAVAILABLE_ERROR
@@ -151,21 +151,25 @@ def create_meeting(customer_contact_information: str, representative_contact_inf
         return json.dumps(create_meeting_response)
     except ApiException as e:
         print(e)
-
-def parse_natural_date(date_str, base_date=None, timezone=None):
+    
+def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False):
     cal = parsedatetime.Calendar()
     time_struct, _ = cal.parse(date_str, base_date)
-    parsed_dt = datetime(*time_struct[:6])
+    if date_input:
+        parsed_dt = datetime(*time_struct[:3])
+    else:
+        parsed_dt = datetime(*time_struct[:6])
 
+    pprint('parsed_dt: {}'.format(parsed_dt))
     if base_date and (parsed_dt.date() != base_date.date()):
         parsed_dt = datetime.combine(base_date.date(), parsed_dt.time())
-
+    pprint('first if: parsed_dt: {}'.format(parsed_dt))
     # Handle time zone if provided
     if timezone:
         local_timezone = pytz.timezone(timezone)
         parsed_dt = local_timezone.localize(parsed_dt)  # Localize to the specified timezone
         parsed_dt = parsed_dt.astimezone(pytz.utc)  # Convert to UTC
-
+    pprint('second if: parsed_dt: {}'.format(parsed_dt))
     return parsed_dt
 
 
