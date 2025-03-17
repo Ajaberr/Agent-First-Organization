@@ -18,7 +18,30 @@ Here is the simple structure for a [Config](../Config/intro.md) JSON file:
 
 * `role (Required)`: The general "role" of the chatbot you want to create. For instance, "roleplay bot", "customer service assistant", "data analyst", "shopping assistant", etc.
 * `user_objective (Required)`: The user's goal that the chatbot wants to achieve. Related to the user experience. Description in third person. For instance, "The customer service assistant helps users with customer service inquiries. It can provide information about products, services, and policies, as well as help users resolve issues and complete transactions."
-* `workers (Required, List(WorkerClassName))`: The [Workers](Workers/Workers.md) pre-defined under `agentorg/workers` folder in the codebase that you want to use for the chatbot.
+* `builder_objective (Optional)`: The additional target you want the chatbot to achieve beyond the user's goal. Can contain hidden objectives or subtle objectives which is hidden from the user. Describe in third person. For instance, "The customer service assistant helps to request customer's contact information."
+* `domain (Optional)`: The domain that you want to create the chatbot for. For instance, "robotics and automation", "Ecommerce", "Healthcare", etc.
+* `intro (Optional)`: The introduction of the above domain that you want to create the chatbot for. It should contain the information about the domain, the products, services, and policies, etc.
+* `task_docs (Optional, List[Dict])`: The documents resources for the taskgraph generation to create the chatbot. Each item in the list should contain the following fields:
+    * `source (Required)`: The source url that you want the chatbot to refer to
+    * `desc (Optional)` : Short description of the source and how it is used
+    * `num (Optional)`: The number of websites that you want the chatbot to refer to for the source, defaults to one (only the url page)
+* `rag_docs (Optional, List[Dict])`: If you want to use RAGWorker, then here indicates the documents for the RAG component of chatbot when running chatbot. Each item in the list should contain the following fields:
+    * `source (Required)`: The source url that you want the chatbot to refer to
+    * `desc (Optional)` : Short description of the source and how it is used
+    * `num (Optional)`: The number of websites that you want the chatbot to refer to for the source, defaults to one (only the url page)
+* `tasks (Optional, List(Dict))`: The pre-defined list of tasks that the chatbot need to handle. If empty, the system will generate the tasks and the steps to complete the tasks based on the role, objective, domain, intro and docs fields. The more information you provide in the fields, the more accurate the tasks and steps will be generated. If you provide the tasks, it should contain the following fields:
+    * `task_name (Required, Str)`: The task that the chatbot need to handle
+    * `steps (Required, List(Str))`: The steps to complete the task
+ * `workers (Required, List(Dict))`: The workers pre-defined under arklex/env/workers folder that you want to use for the chatbot. Each worker will be defined as a class decorated with @register_worker. Please refer to the arklex/env/workers/message_worker.py for an example. The field required for each worker object is:
+            * `id (Required, uuid)`: The unique id for the worker
+            * `name (Required, Str)`: The WorkerClassName. Such as `MessageWorker`
+            * `path (Required, Str)`: The file path of the worker start from the arklex/env/workers folder. Such as `message_worker.py`.
+* `tools (Optional, List(Dict))`: The tools (e.g. APIs, function, etc.) pre-defined under arklex/env/tools folder that you want to use for the chatbot. Each tool will be defined as a function decorated with @register_tool. The decorator includes the **description** - the purpose of the function, **slots** - the arguments needed for the function, **outputs** - expected result of the function. For more details, please refer to the arklex/env/tools/shopify/find_user_id_by_email.py as an example. The field required for each tool object is:
+            * `id (Required, uuid)`: The unique id for the worker
+            * `name (Required, Str)`: The tool function name. Such as `find_user_id_by_email`.
+            * `path (Required, Str)`: The file path of the worker start from the arklex/env/tools folder. Such as `shopify/find_user_id_by_email.py`.
+            * `fixed_args (Optional, Dict)`: All the must and deterministic arguments for the tool function, such as credentials or already known argument during development. It should be a dictionary. Such as `{"token": "<access_token>", "shop_url": "<url>", "api_version": "<version>"}`
+
 
 Now, lets see it with the Roleplay Bot example.
 
@@ -32,7 +55,7 @@ Now, lets see it with the Roleplay Bot example.
     "docs": [],
     "tasks": [],
     "workers": [
-        "MessageWorker"
+        {"id": "9244468a-5b0a-4bd2-99aa-650f0efeb0ac", "name": "MessageWorker", "path": "message_worker.py"}
     ]
 }
 ```

@@ -463,7 +463,7 @@ class TaskGraph(TaskGraphBase):
             nlu_records.append({"candidate_intents": [], "pred_intent": "", "no_intent": True, "global_intent": False})
         params["nlu_records"] = nlu_records
         params["curr_node"] = curr_node
-        node_info = {"id": "DefaultWorker", "name": "DefaultWorker", "attribute": {"value": "", "direct": False}}
+        node_info = {"id": "default_worker", "name": "DefaultWorker", "attribute": {"value": "", "direct": False}}
         
         return node_info, params
 
