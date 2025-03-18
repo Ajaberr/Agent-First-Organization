@@ -9,15 +9,14 @@ from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.shopify.utils import authorify_admin
 
 # ADMIN
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifyGetProductsSlots, ShopifyOutputs
 from arklex.env.tools.tools import register_tool
 
 logger = logging.getLogger(__name__)
 
 description = "Get the inventory information and description details of multiple products."
 slots = [
-    ShopifySlots.PRODUCT_IDS,
-    *PAGEINFO_SLOTS
+    ShopifyGetProductsSlots.PRODUCT_IDS,
 ]
 outputs = [
     ShopifyOutputs.PRODUCTS_DETAILS,

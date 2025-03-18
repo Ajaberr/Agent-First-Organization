@@ -4,7 +4,7 @@ import shopify
 import logging
 
 # general GraphQL navigation utilities
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifySearchProductsSlots, ShopifyOutputs
 from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.shopify.utils import authorify_admin
 
@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 
 description = "Search products by string query. If no products are found, the function will return an error message."
 slots = [
-    ShopifySlots.SEARCH_PRODUCT_QUERY,
-    *PAGEINFO_SLOTS
+    ShopifySearchProductsSlots.SEARCH_PRODUCT_QUERY,
 ] 
 outputs = [
     ShopifyOutputs.PRODUCT_ID,
