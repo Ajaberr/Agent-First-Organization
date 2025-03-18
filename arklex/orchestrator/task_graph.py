@@ -217,6 +217,7 @@ class TaskGraph(TaskGraphBase):
         if not curr_node or curr_node not in self.graph.nodes:
             curr_node = self.start_node
             params["curr_node"] = curr_node
+            params["curr_pred_intent"] = None
         else:
             curr_node = str(curr_node)
         logger.info(f"Intial curr_node: {curr_node}")
@@ -244,7 +245,19 @@ class TaskGraph(TaskGraphBase):
                 available_nodes[node[0]] = {"limit": node[1]["limit"]}
             params["available_nodes"] = available_nodes
         else:
-            available_nodes = params.get("available_nodes")
+            # Re-initialize available_nodes to deal with the case that the taskgraph is updated during the conversation
+            old_available_nodes = params.get("available_nodes")
+            available_nodes = {}
+            # node is not in the current graph, remove it from available_modes
+            for node in old_available_nodes.keys():
+                if node in self.graph.nodes:
+                    available_nodes[node] = {"limit": old_available_nodes[node]["limit"]}
+            # add the new nodes to available_nodes
+            for node in self.graph.nodes.data():
+                if node[0] not in available_nodes.keys():
+                    available_nodes[node[0]] = {"limit": node[1]["limit"]}
+            params["available_nodes"] = available_nodes
+        logger.info(f"available_nodes: {available_nodes}")
         
         if not list(self.graph.successors(curr_node)):  # leaf node
             if flow_stack:  # there is previous unfinished flow
