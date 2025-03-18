@@ -238,13 +238,12 @@ class TaskGraph(TaskGraphBase):
                 available_intents[self.unsure_intent.get("intent")].append(self.unsure_intent)
         logger.info(f"available_intents: {available_intents}")
         
-        if not params.get("available_nodes", None):
-            available_nodes = {}
-            for node in self.graph.nodes.data():
-                available_nodes[node[0]] = {"limit": node[1]["limit"]}
-            params["available_nodes"] = available_nodes
-        else:
-            available_nodes = params.get("available_nodes")
+        # Re-initialize available_nodes to deal with the case that the taskgraph is updated during the conversation
+        available_nodes = {}
+        for node in self.graph.nodes.data():
+            available_nodes[node[0]] = {"limit": node[1]["limit"]}
+        params["available_nodes"] = available_nodes
+        logger.info(f"available_nodes: {available_nodes}")
         
         if not list(self.graph.successors(curr_node)):  # leaf node
             if flow_stack:  # there is previous unfinished flow
