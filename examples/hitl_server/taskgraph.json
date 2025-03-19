@@ -28,8 +28,7 @@
                     "task": "chat with human",
                     "directed": false
                 },
-                "limit": 10,
-                "type": "human"
+                "limit": 10
             }
         ],
         [

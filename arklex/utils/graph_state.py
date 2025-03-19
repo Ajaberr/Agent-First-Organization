@@ -55,6 +55,7 @@ class Verification(BaseModel):
 class StatusEnum(Enum):
     COMPLETE = "complete"
     INCOMPLETE = "incomplete"
+    STAY = "stay"
 
 
 class MessageState(TypedDict):
