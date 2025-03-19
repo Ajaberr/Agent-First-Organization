@@ -1,6 +1,6 @@
 [project]
 name = "arklex"
-version = "0.0.4"
+version = "0.0.1"
 description = "The official Python library for the arklex API"
 authors = [
   { name="Arklex.AI", email="support@arklex.ai" },
@@ -21,6 +21,9 @@ dependencies = [
   "httptools==0.6.4",
   "langchain-community==0.3.3",
   "langchain-openai==0.2.3",
+  "langchain-anthropic==0.3.5",
+  "langchain-google-genai==2.0.9",
+  "langchain-huggingface==0.1.2",
   "langgraph==0.2.39",
   "linkify-it-py==2.0.3",
   "mdit-py-plugins==0.4.2",
@@ -33,14 +36,13 @@ dependencies = [
   "textual==0.85.2",
   "unstructured>=0.16.4",
   "unstructured-client==0.27.0",
-  "uvloop==0.21.0",
   "watchfiles==0.24.0",
   "websockets==13.1",
   "faiss-cpu>=1.10.0",
   "tavily-python==0.5.0",
   "webdriver-manager==4.0.2",
   "scipy==1.14.1",
-  "litellm==1.56.4",
+  "litellm==1.59.0",
   "janus==1.0.0"
 ]
 license = "MIT"

@@ -69,4 +69,4 @@ AI is no longer just about automation—it's about intelligent collaboration bet
 
 As AI continues to transform industries, Arklex stands at the forefront of the next-generation AI revolution. 🚀
 
-🔗 Interested in exploring Arklex? Stay tuned for updates on our [open-source release](https://articulateai.github.io/Agent-First-Organization/) and community-driven innovation!
+🔗 Interested in exploring Arklex? Start with our [open-source release](https://github.com/arklexai/Agent-First-Organization) and community-driven innovation!

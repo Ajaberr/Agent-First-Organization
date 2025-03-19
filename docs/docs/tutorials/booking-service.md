@@ -31,7 +31,16 @@ As a refresher, here is the structure for a *Config* JSON file:
 * `tasks (Optional, List(Dict))`: The pre-defined list of tasks that the chatbot need to handle. If empty, the system will generate the tasks and the steps to complete the tasks based on the role, objective, domain, intro and docs fields. The more information you provide in the fields, the more accurate the tasks and steps will be generated. If you provide the tasks, it should contain the following fields:
     * `task_name (Required, Str)`: The task that the chatbot need to handle
     * `steps (Required, List(Str))`: The steps to complete the task
-* `workers (Required, List(WorkerClassName))`: The [Workers](Workers/Workers.md) pre-defined under `agentorg/workers` folder in the codebase that you want to use for the chatbot.
+ * `workers (Required, List(Dict))`: The workers pre-defined under arklex/env/workers folder that you want to use for the chatbot. Each worker will be defined as a class decorated with @register_worker. Please refer to the arklex/env/workers/message_worker.py for an example. The field required for each worker object is:
+            * `id (Required, uuid)`: The unique id for the worker
+            * `name (Required, Str)`: The WorkerClassName. Such as `MessageWorker`
+            * `path (Required, Str)`: The file path of the worker start from the arklex/env/workers folder. Such as `message_worker.py`.
+* `tools (Optional, List(Dict))`: The tools (e.g. APIs, function, etc.) pre-defined under arklex/env/tools folder that you want to use for the chatbot. Each tool will be defined as a function decorated with @register_tool. The decorator includes the **description** - the purpose of the function, **slots** - the arguments needed for the function, **outputs** - expected result of the function. For more details, please refer to the arklex/env/tools/shopify/find_user_id_by_email.py as an example. The field required for each tool object is:
+            * `id (Required, uuid)`: The unique id for the worker
+            * `name (Required, Str)`: The tool function name. Such as `find_user_id_by_email`.
+            * `path (Required, Str)`: The file path of the worker start from the arklex/env/tools folder. Such as `shopify/find_user_id_by_email.py`.
+            * `fixed_args (Optional, Dict)`: All the must and deterministic arguments for the tool function, such as credentials or already known argument during development. It should be a dictionary. Such as `{"token": "<access_token>", "shop_url": "<url>", "api_version": "<version>"}`
+
 
 Now, lets see it with the Booking Assistant example. Here, we have a sample Config file of a Booking Assistant for a performance company - The Irish Repertory Theatre.
 
@@ -42,15 +51,17 @@ Now, lets see it with the Booking Assistant example. Here, we have a sample Conf
     "builder_objective": "The booking assistant ask for user feedback at the end of the conversation.",
     "domain": "Theatre",
     "intro": "The mission of Irish Repertory Theatre is to provide a context for understanding the contemporary Irish-American experience through evocative works of theater, music, and dance. This mission is accomplished by staging the works of Irish and Irish-American classic and contemporary playwrights, encouraging the development of new works focused on the Irish and Irish-American experience, and producing the works of other cultures interpreted through the lens of an Irish sensibility.",
-    "task_docs": [{
-        "source": "https://irishrep.org/",
-        "num": 10
-    }],
+    "task_docs": [
+        {
+            "source": "https://irishrep.org/",
+            "num": 20
+        }
+    ],
     "tasks": [],
     "workers": [
-        "MessageWorker",
-        "DatabaseWorker",
-        "DefaultWorker"
+        {"id": "26bb6634-3bee-417d-ad75-23269ac17bc3", "name": "MessageWorker", "path": "message_worker.py"},
+        {"id": "9c15af81-04b3-443e-be04-a3522124b905", "name": "DataBaseWorker", "path": "database_worker.py"},
+        {"id": "b06c2b58-12c5-41fe-9838-e93b530e42e8", "name": "DefaultWorker", "path": "default_worker.py"}
     ]
 }
 ```

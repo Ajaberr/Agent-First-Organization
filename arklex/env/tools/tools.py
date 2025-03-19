@@ -13,7 +13,7 @@ from arklex.utils.utils import format_chat_history
 logger = logging.getLogger(__name__)
 
     
-def register_tool(desc, slots=[], outputs=[], isComplete=lambda x: True):
+def register_tool(desc, slots=[], outputs=[], isComplete=lambda x: True, isResponse=False):
     current_file_dir = os.path.dirname(__file__)
     def inner(func):
         file_path = inspect.getfile(func)
@@ -22,12 +22,12 @@ def register_tool(desc, slots=[], outputs=[], isComplete=lambda x: True):
         # different file paths format in Windows and linux systems
         relative_path = relative_path.replace("/", "-").replace("\\", "-").replace(".py", "")
         key = f"{relative_path}-{func.__name__}"
-        tool = lambda : Tool(func, key, desc, slots, outputs, isComplete)
+        tool = lambda : Tool(func, key, desc, slots, outputs, isComplete, isResponse)
         return tool
     return inner
 
 class Tool:
-    def __init__(self, func, name, description, slots, outputs, isComplete):
+    def __init__(self, func, name, description, slots, outputs, isComplete, isResponse):
         self.func = func
         self.name = name
         self.description = description
@@ -36,6 +36,7 @@ class Tool:
         self.info = self.get_info(slots)
         self.slots = self._format_slots(slots)
         self.isComplete = isComplete
+        self.isResponse = isResponse
 
     def _format_slots(self, slots):
         format_slots = []
@@ -48,8 +49,24 @@ class Tool:
                 description=slot["description"], 
                 prompt=slot["prompt"], 
                 required=slot.get("required", False),
-                verified=False
+                verified=slot.get("verified", False)
             ))
+        return format_slots
+    
+    @staticmethod
+    def format_slots(slots):
+        format_slots = []
+        for slot in slots:
+            format_slots.append({
+                "name": slot["name"],
+                "value": slot["value"],
+                "type": slot.get("type", "string"),
+                "enum": slot.get("enum", []),
+                "description": slot.get("description", ""),
+                "prompt": slot.get("prompt", ""),
+                "required": slot.get("required", False),
+                "verified": slot.get("verified", False)
+            })
         return format_slots
 
     def get_info(self, slots):
@@ -72,6 +89,48 @@ class Tool:
         
     def init_slotfilling(self, slotfillapi: SlotFilling):
         self.slotfillapi = slotfillapi
+
+    def _init_slots(self, state: MessageState):
+        default_slots = state["slots"].get("default_slots", [])
+        logger.info(f'Default slots are: {default_slots}')
+        if not default_slots:
+            return
+        response = {}
+        for default_slot in default_slots:
+            response[default_slot.name] = default_slot.value
+            for slot in self.slots:
+                if slot.name == default_slot.name and default_slot.value:
+                    slot.value = default_slot.value
+                    slot.verified = True
+        state["trajectory"].append({
+            "role": "tool",
+            "tool_call_id": str(uuid.uuid4()),
+            "name": "default_slots",
+            "content": json.dumps(response)
+        })
+        logger.info(f'Slots after initialization are: {self.slots}')
+
+    def _skip_tool(self, state: MessageState):
+        default_slots = state["slots"].get("default_slots", [])
+        assigned_slot = False
+        for default_slot in default_slots:
+            for output in self.output:
+                if output["name"] == default_slot.name and default_slot.value:
+                    output["value"] = default_slot.value
+                    assigned_slot = True
+        if not assigned_slot:
+            return False
+        if all([output.get("value") for output in self.output if output.get("required", False)]):
+            state["status"] = StatusEnum.COMPLETE.value
+            call_id = str(uuid.uuid4())
+            state["trajectory"].append({
+                "role": "tool",
+                "tool_call_id": call_id,
+                "name": self.name,
+                "content": json.dumps(self.output)
+            })
+            return True
+        return False
         
     def _execute(self, state: MessageState, **fixed_args):
         # if this tool has been called before, then load the previous slots status
@@ -79,7 +138,19 @@ class Tool:
             self.slots = state["slots"][self.name]
         else:
             state["slots"][self.name] = self.slots
+        # init slot values saved in default slots
+        self._init_slots(state)
         response = "error"
+        # skip the tool if output slot is filled
+        if self._skip_tool(state):
+            logger.info("Tool is skipped because output slot is already filled")
+            response = json.dumps(self.output)
+            if self.isResponse:
+                logger.info("Tool output is stored in response instead of message flow")
+                state["response"] = response
+            else:
+                state["message_flow"] = state["message_flow"] + f"Context from {self.name}: {response}\n\n"
+            return state
         max_tries = 3
         while max_tries > 0 and "error" in response:
             chat_history_str = format_chat_history(state["trajectory"])
@@ -108,15 +179,16 @@ class Tool:
                 logger.info("all slots filled")
                 for slot in slots:
                     if slot.type in ["list", "dict", "array"]:
-                        try:
-                            # Try to parse as JSON first
-                            slot.value = json.loads(slot.value)
-                        except json.JSONDecodeError:
-                            # If JSON decoding fails, fallback to evaluating Python-like literals
+                        if not isinstance(slot.value, list):
                             try:
-                                slot.value = ast.literal_eval(slot.value)
-                            except (ValueError, SyntaxError):
-                                raise ValueError(f"Unable to parse slot value: {slot.value}")
+                                # Try to parse as JSON first
+                                slot.value = json.loads(slot.value)
+                            except json.JSONDecodeError:
+                                # If JSON decoding fails, fallback to evaluating Python-like literals
+                                try:
+                                    slot.value = ast.literal_eval(slot.value)
+                                except (ValueError, SyntaxError):
+                                    raise ValueError(f"Unable to parse slot value: {slot.value}")
                 kwargs = {slot.name: slot.value for slot in slots}
                 combined_kwargs = {**kwargs, **fixed_args}
                 response = self.func(**combined_kwargs)
@@ -147,8 +219,12 @@ class Tool:
                     max_tries -= 1
                     continue
                 state["status"] = StatusEnum.COMPLETE.value if self.isComplete(response) else StatusEnum.INCOMPLETE.value
-                
-        state["message_flow"] = response
+
+        if self.isResponse:
+            logger.info("Tool output is stored in response instead of message flow")
+            state["response"] = response
+        else:
+            state["message_flow"] = state["message_flow"] + f"Context from {self.name}: {response}\n\n"
         state["slots"][self.name] = slots
         return state
 

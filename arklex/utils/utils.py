@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 from logging.handlers import RotatingFileHandler
+from arklex.utils.model_config import MODEL
 
 import tiktoken
 import Levenshtein
@@ -103,9 +104,30 @@ def postprocess_json(raw_code):
 		result = None
 	return result
 
+def truncate_string(text: str, max_length: int=400):
+    if len(text) > max_length:
+        text = text[:max_length] + "..."
+    return text
+
 def format_chat_history(chat_history):
     '''Includes current user utterance'''
     chat_history_str= ""
     for turn in chat_history:
         chat_history_str += f"{turn['role']}: {turn['content']}\n"
     return chat_history_str.strip()
+
+def format_truncated_chat_history(chat_history, max_length=400):
+    '''Includes current user utterance'''
+    chat_history_str= ""
+    for turn in chat_history:
+        chat_history_str += f"{turn['role']}: {truncate_string(turn['content'], max_length) if turn['content'] else turn['content']}\n"
+    return chat_history_str.strip()
+
+def format_messages_by_provider(messages, text, model=MODEL):
+    llm_provider = model['llm_provider']
+    if llm_provider == "anthropic":
+        return {"system": f"{messages[0]['content']}"}
+    elif llm_provider == 'gemini':
+        messages.append({"role": "user", "content": f"{text}"})
+    return {"messages": messages}
+   

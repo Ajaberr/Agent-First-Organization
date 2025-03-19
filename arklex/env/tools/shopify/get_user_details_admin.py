@@ -5,7 +5,7 @@ from arklex.env.tools.tools import register_tool
 
 from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
 from arklex.env.tools.shopify.utils_nav import *
-from arklex.env.tools.shopify.utils import authorify
+from arklex.env.tools.shopify.utils import authorify_admin
 
 # Admin API
 import shopify
@@ -29,7 +29,7 @@ def get_user_details_admin(user_id: str, **kwargs) -> str:
     nav = cursorify(kwargs)
     if not nav[1]:
         return nav[0]
-    auth = authorify(kwargs)
+    auth = authorify_admin(kwargs)
     if auth["error"]:
         return auth["error"]
     
@@ -54,10 +54,6 @@ def get_user_details_admin(user_id: str, **kwargs) -> str:
                         validEmailAddress
                         tags
                         lifetimeDuration
-                        defaultAddress {{
-                            formattedArea
-                            address1
-                        }}
                         addresses {{
                             address1
                         }}
@@ -65,19 +61,12 @@ def get_user_details_admin(user_id: str, **kwargs) -> str:
                             nodes {{
                                 id
                             }}
-                            pageInfo {{
-                                endCursor
-                                hasNextPage
-                                hasPreviousPage
-                                startCursor
-                            }}
                         }}
                     }}
                 }}
             """)
             data = json.loads(response)['data']['customer']
-            pageInfo = data['orders']['pageInfo']
-            return data, pageInfo
+            return json.dumps(data)
 
     except Exception:
         return USER_NOT_FOUND_ERROR

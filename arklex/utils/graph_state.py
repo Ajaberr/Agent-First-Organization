@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, Any, Optional, Union
+from typing import TypedDict, Annotated, Any, Optional, Union, List
 import janus
 from pydantic import BaseModel
 from enum import Enum
@@ -10,7 +10,7 @@ class BotConfig(BaseModel):
     version: str
     language: str
     bot_type: str
-
+    available_workers: list[dict[str, Optional[str]]]
 
 ### Message-related classes
 
@@ -29,7 +29,7 @@ class OrchestratorMessage(BaseModel):
 class Slot(BaseModel):
     name: str
     type: Union[str, int, float, bool, None]
-    value: Union[str, int, float, bool, None]
+    value: Union[str, int, float, bool, List[str], None]
     enum: Optional[list[Union[str, int, float, bool, None]]]
     description: str
     prompt: str

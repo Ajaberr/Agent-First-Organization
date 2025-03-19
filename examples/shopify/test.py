@@ -3,11 +3,6 @@
 
 import unittest
 import json
-import requests
-import base64
-import sys
-import uuid
-import os
 
 
 from arklex.orchestrator.orchestrator import AgentOrg
@@ -110,7 +105,7 @@ class Logic_Test(unittest.TestCase):
             history.append({"role": self.user_prefix, "content": user_text})
             history.append({"role": self.worker_prefix, "content": output})
         print(f"Success criteria: {self.TEST_CASES[2]['criteria']}")
-        self.assertEqual(nodes, self.TEST_CASES[2]["trajectory"])
+        self.assertIn(nodes, self.TEST_CASES[2]["trajectory"])
 
     def test_Unittest3(self):
         print("\n=============Unit Test 3=============")

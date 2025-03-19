@@ -5,7 +5,7 @@ import shopify
 
 # general GraphQL navigation utilities
 from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
-from arklex.env.tools.shopify.utils import authorify
+from arklex.env.tools.shopify.utils import authorify_admin
 from arklex.env.tools.shopify.utils_nav import *
 
 from arklex.env.tools.tools import register_tool
@@ -27,7 +27,7 @@ def get_collection(collection_id: list, **kwargs) -> str:
     nav = cursorify(kwargs)
     if not nav[1]:
         return nav[0]
-    auth = authorify(kwargs)
+    auth = authorify_admin(kwargs)
     if auth["error"]:
         return auth["error"]
     
@@ -56,8 +56,6 @@ def get_collection(collection_id: list, **kwargs) -> str:
             }}
             """)
             results = json.loads(response)["data"]["collection"]
-            pageInfo = results['products']['pageInfo']
-            
-            return results, pageInfo
+            return results
     except Exception as e:
-        return COLLECTION_NOT_FOUND
+        return {"content": COLLECTION_NOT_FOUND}

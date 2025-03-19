@@ -1,19 +1,18 @@
 # Workers
 
 # Introduction
-Workers serve as the fundamental building block of the **Agent First Organization** framework and responsible for the "execution" of the tasks and its subtasks. Unlike some frameworks which differentiates between *workers* and *tools*, **Agent First Organization** combines both into an *Worker* component. Responsible for the execution and managed by the orchestrator, each Worker are designed to convert instructions into results. Although structured, *Workers* can be designed to do high level complicated tasks and can call other workers itself, greatly enhancing its ability to address. 
+Workers serve as one of the fundamental building block of the **Agent First Organization** framework and responsible for the "execution" of the tasks and its subtasks. A structured component, *Workers* can be designed to do high level complicated tasks and can call other workers itself, greatly enhancing its ability to address. Workers takes in a [MessageState](MessageState.md) and returns a MessageState.
 
 # Implementation
 :::tip  Technical Details
-Each Worker represent a group of GraphNodes on a LangGraph and can be subgraphed.
+Each Worker represent a node of GraphNodes or a  subgraph on the LangGraph.
 :::
 
-BaseWorker is the parent class of all workers is the BaseWorker and consists of a `description` attribute and `execute()` abstract method. Each node consists of a chain of relevants Workers by the orchestrator
-on execution which the on execution, processes the MessageState input into an MessageState output.
+BaseWorker is the parent class of all workers is the BaseWorker and consists of a `description` attribute and `execute()` abstract method. Each node consists of a chain of relevants Workers by the orchestrator on execution which the on execution, processes the MessageState input into an MessageState output.
 
 ### Attributes
 #### Description
-`description` is a string that describes the task that the BaseWorker is meant to handle. This is used by the Generator to assign the right task for the worker when generating the TaskGraph.
+`description` is a string that describes the task that the BaseWorker is meant to handle. This is used by the Generator to assign the right workers for the task when generating the TaskGraph.
 
 Some examples:
     - "The worker that used to deliver the message to the user, either a question or provide some information." ([MessageWorker](./MessageWorker.mdx))

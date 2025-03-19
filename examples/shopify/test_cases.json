@@ -59,12 +59,13 @@
     {
         "test_id": 2,
         "user_utterance": [
-            "What hats do you sell?"
+            "What hats do you sell?",
+            "show me images of those hats"
         ],
         "description": "Question about products",
         "criteria": "Provide product information",
         "final_state": "Answer user query",
-        "trajectory": ["5"],
+        "trajectory": [["5", "5"], ["5", "11"]],
         "expected_conversation": [
             {
                 "role": "assistant",
@@ -77,6 +78,14 @@
             {
                 "role": "assistant",
                 "content": "We have a selection of fun and stylish hats for kids! Here are a few options available:\n1. **Pink Unicorn Boys & Girls Baseball Hat**: This hat features a vibrant pink color with a 3D unicorn design. It's made of premium cotton and is adjustable to fit children ages 2-12. You can check it out [here](https://xu1e3z-yi.myshopify.com/products/awhale-boys-and-girls-baseball-hat-toddler-cap-with-ponytail-messy-bun-opening-for-ages-2-12-adjustable-buckle-unicorn-pink).\n2. **Green Boys & Girls Baseball Hat**: This hat is functional and stylish with a sleek reflective strip across the brim. It's perfect for sun protection and fits children ages 4-12. More details are available [here](https://xu1e3z-yi.myshopify.com/products/awhale-boys-and-girls-baseball-hat-toddler-cap-with-ponytail-messy-bun-opening-for-ages-2-12-adjustable-buckle-green).\n3. **Metallic Navy Blue Boys & Girls Baseball Hat**: This hat is available in two sizes for ages 2-6 and 7-12. It's made from breathable cotton and features a reflective strip for sun protection. Take a look [here](https://xu1e3z-yi.myshopify.com/products/awhale-boys-and-girls-baseball-hat-toddler-cap-with-ponytail-messy-bun-opening-for-ages-2-12-adjustable-bucklemetallic-navy-blue).\n4. **Metallic Light Pink Boys & Girls Baseball Hat**: Like the navy version, this hat is also available for children ages 2-6 and 7-12. It's stylish with a reflective strip and adjustable buckle. You can find more information [here](https://xu1e3z-yi.myshopify.com/products/awhale-boys-and-girls-baseball-hat-toddler-cap-with-ponytail-messy-bun-opening-for-ages-2-12-adjustable-bucklemetallic-light-pink).\nFeel free to let me know if you have any questions or if you need further assistance!"
+            },
+            {
+                "role": "user",
+                "content": "show me images of those hats"
+            },
+            {
+                "role": "assistant",
+                "content": "Images for each product is as follows: <product_image_urls>"
             }
         ]
     },
