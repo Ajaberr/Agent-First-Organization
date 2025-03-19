@@ -60,8 +60,8 @@ def start_apis():
     command = [
         "uvicorn",
         "arklex.orchestrator.NLU.api:app",  # Replace with proper import path
-        "--port", 55135,
-        "--host", "localhost",
+        "--port", API_PORT,
+        "--host", "0.0.0.0",
         "--log-level", "info"
     ]
 
