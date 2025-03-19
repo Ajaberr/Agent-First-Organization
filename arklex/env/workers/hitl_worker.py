@@ -233,9 +233,10 @@ class HITLWorkerChatFlag(HITLWorker):
             need_hitl, message = self.verify(state)
             if not need_hitl:
                 return self.fallback(state)
+            
             state["message_flow"] = message
             state['metadata']['hitl'] = 'live'
-            state['status'] = StatusEnum.INCOMPLETE.value
+            state['status'] = StatusEnum.STAY.value
         
         else:
             state['message_flow'] = 'Live chat completed'
@@ -275,12 +276,14 @@ class HITLWorkerMCFlag(HITLWorker):
     
     def execute(self, state: MessageState) -> MessageState:
         if not state['metadata'].get('hitl'):
-            if not self.verify(state):
-                return self.error(state)
+            need_hitl, _ = self.verify(state)
+            if not need_hitl:
+                return self.fallback(state)
+            
             state['response'] = '[[sending confirmation : this should not show up for user]]'
             state['metadata']['hitl'] = 'mc'
             state['metadata]']['attempts'] = self.params.get("max_retries", 3)
-            state['status'] = StatusEnum.INCOMPLETE.value
+            state['status'] = StatusEnum.STAY.value
         
         else:
             result = self.params["choices"].get(state.user_message.message) # not actually user message but system confirmation
@@ -295,11 +298,11 @@ class HITLWorkerMCFlag(HITLWorker):
             if state['metadata]']['attempts'] <= 0:
                 state['response'] = self.params['default']
                 state['metadata']['hitl'] = None
-                state['status'] = StatusEnum.COMPLETE.value
+                state['status'] = StatusEnum.INCOMPLETE.value
                 return state
                     
             state['response'] = '[[sending confirmation : this should not show up for user]]'
             state['metadata']['hitl'] = 'mc'
-            state['status'] = StatusEnum.INCOMPLETE.value
+            state['status'] = StatusEnum.STAY.value
             
         return state

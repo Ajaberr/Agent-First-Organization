@@ -225,9 +225,9 @@ class TaskGraph(TaskGraphBase):
         node_status = params.get("node_status", {})
         logger.info(f"node_status: {node_status}")
 
-        # For the human-in-the-loop type of node, if the node is not completed, then directly return that node instead of jumping to other nodes
+        # For the multi-step nodes, directly stay at that node instead of moving to other nodes
         status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
-        if self.graph.nodes[curr_node].get("type") and self.graph.nodes[curr_node]["type"] == "human" and status == StatusEnum.INCOMPLETE.value:
+        if status == StatusEnum.STAY.value:
             node_info = self.graph.nodes[curr_node]
             node_name = node_info["resource"]["name"]
             id = node_info["resource"]["id"]
