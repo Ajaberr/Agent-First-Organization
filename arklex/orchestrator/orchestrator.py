@@ -18,7 +18,7 @@ from openai import OpenAI
 from langchain_openai import ChatOpenAI
 
 
-from arklex.orchestrator.task_graph import TaskGraph, END_NODE
+from arklex.orchestrator.task_graph import TaskGraph
 from arklex.env.tools.utils import ToolGenerator
 from arklex.orchestrator.NLU.nlu import SlotFilling
 from arklex.orchestrator.prompts import RESPOND_ACTION_NAME, RESPOND_ACTION_FIELD_NAME, REACT_INSTRUCTION

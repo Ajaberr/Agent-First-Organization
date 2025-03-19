@@ -282,7 +282,7 @@
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Get the product id for each order",
+                    "task": "Get the info for each order",
                     "direct": false
                 },
                 "limit": 10
@@ -312,7 +312,7 @@
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Get the product id for each order",
+                    "task": "Get the info for each order",
                     "direct": false
                 },
                 "limit": 10
