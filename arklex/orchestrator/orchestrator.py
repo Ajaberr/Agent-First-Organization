@@ -148,7 +148,7 @@ class AgentOrg:
                 # Change the dialog_states from Class object to dict
                 if params.get("dialog_states"):
                     params["dialog_states"] = {tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
-                if node_attribute["type"] == "multiple-choice":
+                if node_attribute.get("type", "") == "multiple-choice" and node_attribute.get("choice_list", []):
                     return_response["choice_list"] = node_attribute["choice_list"]
                 return return_response
 
