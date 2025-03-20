@@ -117,7 +117,7 @@ class Env():
                         "role": "tool",
                         "tool_call_id": call_id,
                         "name": self.id2name[id],
-                        "content": response_state["response"] if "response" in response_state else response_state["message_flow"]
+                        "content": response_state["response"] if "response" in response_state else response_state.get("message_flow", ""),
             })
             params["node_status"][params.get("curr_node")] = response_state.get("status", StatusEnum.COMPLETE.value)
         else:
