@@ -31,7 +31,7 @@ def get_order_details(order_ids: list, order_names: list, user_id: str, limit=10
     try:
         order_ids = ' OR '.join(f'id:{oid.split("/")[-1]}' for oid in order_ids)
         order_names = ' OR '.join(f'name:{name}' for name in order_ids)
-        query = f"customer_id:{user_id}"
+        query = f"customer_id:{user_id.split('/')[-1]}"
         if order_ids:
             query += f" AND ({order_ids})"
         if order_names:
