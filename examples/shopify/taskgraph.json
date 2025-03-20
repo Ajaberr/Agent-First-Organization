@@ -27,21 +27,8 @@
             }
         ],
         [
-            "2",
-            "3",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
             "0",
-            "4",
+            "3",
             {
                 "intent": "Search for products or ask for recommendation",
                 "attribute": {
@@ -54,7 +41,7 @@
         ],
         [
             "0",
-            "5",
+            "4",
             {
                 "intent": "Ask for detailed product information",
                 "attribute": {
@@ -67,7 +54,7 @@
         ],
         [
             "0",
-            "6",
+            "5",
             {
                 "intent": "Ask about past orders",
                 "attribute": {
@@ -79,13 +66,26 @@
             }
         ],
         [
+            "0",
             "6",
-            "7",
             {
-                "intent": "None",
+                "intent": "Ask for product image",
                 "attribute": {
                     "weight": 1,
-                    "pred": false,
+                    "pred": true,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "0",
+            "7",
+            {
+                "intent": "Return products or cancel order",
+                "attribute": {
+                    "weight": 1,
+                    "pred": true,
                     "definition": "",
                     "sample_utterances": []
                 }
@@ -105,73 +105,8 @@
             }
         ],
         [
-            "0",
+            "8",
             "9",
-            {
-                "intent": "Ask for product image",
-                "attribute": {
-                    "weight": 1,
-                    "pred": true,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "0",
-            "10",
-            {
-                "intent": "Return products or cancel order",
-                "attribute": {
-                    "weight": 1,
-                    "pred": true,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "10",
-            "11",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "11",
-            "12",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "12",
-            "13",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "13",
-            "14",
             {
                 "intent": "choose the order to be returned",
                 "attribute": {
@@ -183,8 +118,8 @@
             }
         ],
         [
-            "13",
-            "15",
+            "8",
+            "10",
             {
                 "intent": "choose the order to be canceled",
                 "attribute": {
@@ -197,7 +132,7 @@
         ],
         [
             "0",
-            "16",
+            "11",
             {
                 "intent": "Ask for items in the shopping cart or checkout url",
                 "attribute": {
@@ -209,21 +144,8 @@
             }
         ],
         [
-            "16",
-            "5",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
             "0",
-            "17",
+            "12",
             {
                 "intent": "Ask for a specific product info (on a web page or refer it as 'this')",
                 "attribute": {
@@ -236,7 +158,7 @@
         ],
         [
             "0",
-            "18",
+            "13",
             {
                 "intent": "Add items to the shopping cart",
                 "attribute": {
@@ -248,8 +170,8 @@
             }
         ],
         [
-            "18",
-            "19",
+            "13",
+            "14",
             {
                 "intent": "None",
                 "attribute": {
@@ -261,8 +183,8 @@
             }
         ],
         [
-            "19",
-            "20",
+            "14",
+            "15",
             {
                 "intent": "choose the product to be added to the shopping cart",
                 "attribute": {
@@ -310,21 +232,6 @@
             "2",
             {
                 "resource": {
-                    "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
-                    "name": "find_user_id_by_email"
-                },
-                "attribute": {
-                    "value": "",
-                    "task": "Find user id by email",
-                    "direct": false
-                },
-                "limit": 10
-            }
-        ],
-        [
-            "3",
-            {
-                "resource": {
                     "id": "55011bc1-2a55-4e21-bf39-e9624729c8d8",
                     "name": "get_user_details_admin"
                 },
@@ -337,7 +244,7 @@
             }
         ],
         [
-            "4",
+            "3",
             {
                 "resource": {
                     "id": "2b275abc-6226-2013-ba05-t4ab83daalc3",
@@ -352,7 +259,7 @@
             }
         ],
         [
-            "5",
+            "4",
             {
                 "resource": {
                     "id": "22fae76f-085c-4098-9011-2ae1e1eb8dc3",
@@ -367,37 +274,7 @@
             }     
         ],
         [
-            "6",
-            {
-                "resource": {
-                    "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
-                    "name": "find_user_id_by_email"
-                },
-                "attribute": {
-                    "value": "",
-                    "task": "Find user id by email",
-                    "direct": false
-                },
-                "limit": 10
-            }
-        ],
-        [
-            "7",
-            {
-                "resource": {
-                    "id": "55011bc1-2a55-4e21-bf39-e9624729c8d8",
-                    "name": "get_user_details_admin"
-                },
-                "attribute": {
-                    "value": "",
-                    "task": "Find user details by id",
-                    "direct": false
-                },
-                "limit": 10
-            }
-        ],
-        [
-            "8",
+            "5",
             {
                 "resource": {
                     "id": "2a2750cb-6226-4068-ba05-a4db83da3e16",
@@ -405,14 +282,14 @@
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Get the product id for each order",
+                    "task": "Get the info for each order",
                     "direct": false
                 },
                 "limit": 10
             }
         ],
         [
-            "9",
+            "6",
             {
                 "resource": {
                     "id": "1b3850ls-025d-1025-1082-a4df13da0e32",
@@ -427,37 +304,7 @@
             }
         ],
         [
-            "10",
-            {
-                "resource": {
-                    "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
-                    "name": "find_user_id_by_email"
-                },
-                "attribute": {
-                    "value": "",
-                    "task": "Find user id by email",
-                    "direct": false
-                },
-                "limit": 10
-            }
-        ],
-        [
-            "11",
-            {
-                "resource": {
-                    "id": "55011bc1-2a55-4e21-bf39-e9624729c8d8",
-                    "name": "get_user_details_admin"
-                },
-                "attribute": {
-                    "value": "",
-                    "task": "Find user details by id",
-                    "direct": false
-                },
-                "limit": 10
-            }
-        ],
-        [
-            "12",
+            "7",
             {
                 "resource": {
                     "id": "2a2750cb-6226-4068-ba05-a4db83da3e16",
@@ -465,14 +312,14 @@
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Get the product id for each order",
+                    "task": "Get the info for each order",
                     "direct": false
                 },
                 "limit": 10
             }
         ],
         [
-            "13",
+            "8",
             {
                 "resource": {
                     "id": "MessageWorker",
@@ -487,7 +334,7 @@
             }
         ],
         [
-            "14",
+            "9",
             {
                 "resource": {
                     "id": "alfse0ls-lx4f-a01m-1mch-a4dfsl010end",
@@ -502,7 +349,7 @@
             }
         ],
         [
-            "15",
+            "10",
             {
                 "resource": {
                     "id": "alla05l2-3kd1-x9iw-10k3-algk3xenfsl9",
@@ -517,7 +364,7 @@
             }
         ],
         [
-            "16",
+            "11",
             {
                 "resource": {
                     "id": "alfseal2-al94-2kdq-slci-aldjcjenfead",
@@ -532,7 +379,7 @@
             }
         ],
         [
-            "17",
+            "12",
             {
                 "resource": {
                     "id": "xl34e76f-025c-4xl2-0s2j-l4e1eal2naak",
@@ -547,7 +394,7 @@
             }
         ],
         [
-            "18",
+            "13",
             {
                 "resource": {
                     "id": "22fae76f-085c-4098-9011-2ae1e1eb8dc3",
@@ -562,7 +409,7 @@
             }     
         ],
         [
-            "19",
+            "14",
             {
                 "resource": {
                     "id": "MessageWorker",
@@ -577,7 +424,7 @@
             }
         ],
         [
-            "20",
+            "15",
             {
                 "resource": {
                     "id": "2alak3db-sl36-4zk9-aa35-a4dlkfm3se16",
@@ -593,16 +440,6 @@
         ]
     ],
     "tools": [
-        {
-            "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
-            "name": "find_user_id_by_email",
-            "path": "shopify/find_user_id_by_email.py",
-            "fixed_args": {
-                "admin_token": "<shopify_admin_token>",
-                "shop_url": "<your-shopify-shop-url>",
-                "api_version": "2024-10"
-            }
-        },
         {
             "id": "55011bc1-2a55-4e21-bf39-e9624729c8d8",
             "name": "get_user_details_admin",
