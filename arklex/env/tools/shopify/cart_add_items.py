@@ -5,10 +5,7 @@ from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.tools import register_tool
 
 description = "Add items to user's shopping cart."
-slots = [
-    ShopifyCartAddItemsSlots.CART_ID,
-    ShopifyCartAddItemsSlots.ADD_LINE_ITEM
-]
+slots = ShopifyCartAddItemsSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.CART_ADD_ITEMS_DETAILS
 ]

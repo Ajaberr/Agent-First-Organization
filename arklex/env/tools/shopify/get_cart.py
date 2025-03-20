@@ -8,9 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 description = "Get cart information"
-slots = [
-    ShopifyGetCartSlots.CART_ID
-]
+slots = ShopifyGetCartSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.GET_CART_DETAILS,
     *PAGEINFO_OUTPUTS

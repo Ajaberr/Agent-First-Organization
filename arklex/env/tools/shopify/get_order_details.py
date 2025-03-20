@@ -8,11 +8,7 @@ from arklex.env.tools.shopify.utils import authorify_admin
 from arklex.env.tools.shopify.utils_slots import ShopifyGetOrderDetailsSlots, ShopifyOutputs
 
 description = "Get the status and details of an order."
-slots = [
-    ShopifyGetOrderDetailsSlots.USER_ID,
-    ShopifyGetOrderDetailsSlots.ORDER_IDS,
-    ShopifyGetOrderDetailsSlots.ORDER_NAMES
-]
+slots = ShopifyGetOrderDetailsSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.ORDERS_DETAILS
 ]

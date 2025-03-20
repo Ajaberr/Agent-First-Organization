@@ -15,9 +15,7 @@ from arklex.env.tools.tools import register_tool
 logger = logging.getLogger(__name__)
 
 description = "Get the inventory information and description details of multiple products."
-slots = [
-    ShopifyGetProductsSlots.PRODUCT_IDS,
-]
+slots = ShopifyGetProductsSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.PRODUCTS_DETAILS,
     *PAGEINFO_OUTPUTS

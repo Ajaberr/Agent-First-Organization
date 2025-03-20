@@ -12,9 +12,7 @@ from arklex.env.tools.tools import register_tool
 logger = logging.getLogger(__name__)
 
 description = "Return order by order id. If no fulfillments are found, the function will return an error message."
-slots = [
-    ShopifyReturnProductsSlots.RETURN_ORDER_ID,
-]
+slots = ShopifyReturnProductsSlots.get_all_slots()
 # change output
 outputs = [
     ShopifyOutputs.RETURN_REQUEST_DETAILS,

@@ -12,10 +12,7 @@ from arklex.env.tools.tools import register_tool
 logger = logging.getLogger(__name__)
 
 description = "Cancel order by order id."
-slots = [
-    ShopifyCancelOrderSlots.CANCEL_ORDER_ID
-]
-
+slots = ShopifyCancelOrderSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.CANECEL_REQUEST_DETAILS,
 ]

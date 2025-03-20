@@ -20,9 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 description = "Search products by string query. If no products are found, the function will return an error message."
-slots = [
-    ShopifySearchProductsSlots.SEARCH_PRODUCT_QUERY,
-] 
+slots = ShopifySearchProductsSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.PRODUCT_ID,
     *PAGEINFO_OUTPUTS

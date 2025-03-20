@@ -11,9 +11,7 @@ from arklex.env.tools.shopify.utils import authorify_admin
 import shopify
 
 description = "Get the details of a user with Admin API."
-slots = [
-    ShopifyGetUserDetailsAdminSlots.USER_ID,
-]
+slots = ShopifyGetUserDetailsAdminSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.USER_DETAILS,
     *PAGEINFO_OUTPUTS

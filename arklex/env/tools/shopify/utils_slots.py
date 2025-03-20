@@ -6,6 +6,10 @@ class ShopifySlots:
         slot["type"] = "array"
         slot["description"] = f"List of {slot['name']}. {slot['description']}"
         return slot
+    
+    @classmethod
+    def get_all_slots(cls):
+        return [slot for slot in cls.__dict__.values() if isinstance(slot, dict) or isinstance(slot, list)]
 
     USER_ID = {
         "name": "user_id",
@@ -104,24 +108,26 @@ class ShopifyGetCartSlots(ShopifySlots):
 
 class ShopifyGetOrderDetailsSlots(ShopifySlots):
     USER_ID = {**ShopifySlots.USER_ID, "required": True}
-    ORDER_ID = {
-        "name": "order_id",
-        "type": "string",
-        "description": "The order id, such as gid://shopify/Order/1289503851427.",
-        "prompt": "Please provide the order id to get the details of the order.",
-        "required": False,
-        "verified": True
-    }
-    ORDER_IDS = ShopifySlots.to_list(ORDER_ID)
-    ORDER_NAME = {
-        "name": "order_name",
-        "type": "string",
-        "description": "The order name, such as '#1001'.",
-        "prompt": "Please provide the order name to get the details of the order.",
-        "required": False,
-        "verified": True
-    }
-    ORDER_NAMES = ShopifySlots.to_list(ORDER_NAME)
+    ORDER_IDS = ShopifySlots.to_list(
+        {
+            "name": "order_id",
+            "type": "string",
+            "description": "The order id, such as gid://shopify/Order/1289503851427.",
+            "prompt": "Please provide the order id to get the details of the order.",
+            "required": False,
+            "verified": True
+        }
+    )
+    ORDER_NAMES = ShopifySlots.to_list(
+        {
+            "name": "order_name",
+            "type": "string",
+            "description": "The order name, such as '#1001'.",
+            "prompt": "Please provide the order name to get the details of the order.",
+            "required": False,
+            "verified": True
+        }
+    )
 
 
 class ShopifyGetProductImagesSlots(ShopifySlots):

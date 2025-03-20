@@ -19,10 +19,7 @@ from langchain_openai import ChatOpenAI
 logger = logging.getLogger(__name__)
 
 description = "Get the product image url of a product."
-slots = [
-    ShopifyGetProductImagesSlots.PRODUCT_IDS,
-    *PAGEINFO_SLOTS
-]
+slots = ShopifyGetProductImagesSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.PRODUCTS_DETAILS,
     *PAGEINFO_OUTPUTS
