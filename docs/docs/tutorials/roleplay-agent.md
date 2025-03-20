@@ -29,9 +29,7 @@ Here is the simple structure for a [Config](../Config/intro.md) JSON file:
     * `source (Required)`: The source url that you want the chatbot to refer to
     * `desc (Optional)` : Short description of the source and how it is used
     * `num (Optional)`: The number of websites that you want the chatbot to refer to for the source, defaults to one (only the url page)
-* `tasks (Optional, List(Dict))`: The pre-defined list of tasks that the chatbot need to handle. If empty, the system will generate the tasks and the steps to complete the tasks based on the role, objective, domain, intro and docs fields. The more information you provide in the fields, the more accurate the tasks and steps will be generated. If you provide the tasks, it should contain the following fields:
-    * `task_name (Required, Str)`: The task that the chatbot need to handle
-    * `steps (Required, List(Str))`: The steps to complete the task
+* `tasks (Optional, List(Str))`: The pre-defined list of tasks that the chatbot need to handle. If empty, the system will generate the tasks and the steps to complete the tasks based on the role, objective, domain, intro and docs fields. The more information you provide in the fields, the more accurate the tasks and steps will be generated.
  * `workers (Required, List(Dict))`: The workers pre-defined under arklex/env/workers folder that you want to use for the chatbot. Each worker will be defined as a class decorated with @register_worker. Please refer to the arklex/env/workers/message_worker.py for an example. The field required for each worker object is:
             * `id (Required, uuid)`: The unique id for the worker
             * `name (Required, Str)`: The WorkerClassName. Such as `MessageWorker`
