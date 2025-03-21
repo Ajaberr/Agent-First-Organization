@@ -217,9 +217,22 @@ class TaskGraph(TaskGraphBase):
         if not curr_node or curr_node not in self.graph.nodes:
             curr_node = self.start_node
             params["curr_node"] = curr_node
+            params["curr_pred_intent"] = None
         else:
             curr_node = str(curr_node)
         logger.info(f"Intial curr_node: {curr_node}")
+
+        node_status = params.get("node_status", {})
+        logger.info(f"node_status: {node_status}")
+
+        # For the multi-step nodes, directly stay at that node instead of moving to other nodes
+        status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
+        if status == StatusEnum.STAY.value:
+            node_info = self.graph.nodes[curr_node]
+            node_name = node_info["resource"]["name"]
+            id = node_info["resource"]["id"]
+            node_info = {"id": id, "name": node_name, "attribute": node_info["attribute"]}
+            return node_info, params
 
         # get the current global intent
         curr_pred_intent = params.get("curr_pred_intent", None)
@@ -244,7 +257,19 @@ class TaskGraph(TaskGraphBase):
                 available_nodes[node[0]] = {"limit": node[1]["limit"]}
             params["available_nodes"] = available_nodes
         else:
-            available_nodes = params.get("available_nodes")
+            # Re-initialize available_nodes to deal with the case that the taskgraph is updated during the conversation
+            old_available_nodes = params.get("available_nodes")
+            available_nodes = {}
+            # node is not in the current graph, remove it from available_modes
+            for node in old_available_nodes.keys():
+                if node in self.graph.nodes:
+                    available_nodes[node] = {"limit": old_available_nodes[node]["limit"]}
+            # add the new nodes to available_nodes
+            for node in self.graph.nodes.data():
+                if node[0] not in available_nodes.keys():
+                    available_nodes[node[0]] = {"limit": node[1]["limit"]}
+            params["available_nodes"] = available_nodes
+        logger.info(f"available_nodes: {available_nodes}")
         
         if not list(self.graph.successors(curr_node)):  # leaf node
             if flow_stack:  # there is previous unfinished flow
@@ -304,7 +329,8 @@ class TaskGraph(TaskGraphBase):
                 logger.info(f"curr_node: {next_node}")
                 node_info, params, candidates_intents = \
                 self._get_node(next_node, available_nodes, available_intents, params, intent=next_intent)
-                if next_node != curr_node:
+                 # if current node is not a leaf node and jump to another node, then add it onto stack
+                if next_node != curr_node and list(self.graph.successors(curr_node)):
                     flow_stack.append(curr_node)
                     params["flow"] = flow_stack
                 if node_info["name"]:
@@ -315,7 +341,6 @@ class TaskGraph(TaskGraphBase):
                 # 1. no global intent found and no local intent found
                 # 2. gload intent found but skipped based on the _get_node function
                 # Then check whether the current node completed or not
-                node_status = params.get("node_status", {})
                 status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
                 if status == StatusEnum.INCOMPLETE.value:
                     logger.info(f"no local or global intent found, the current node is not complete")
@@ -463,7 +488,7 @@ class TaskGraph(TaskGraphBase):
             nlu_records.append({"candidate_intents": [], "pred_intent": "", "no_intent": True, "global_intent": False})
         params["nlu_records"] = nlu_records
         params["curr_node"] = curr_node
-        node_info = {"id": "default_worker", "name": "DefaultWorker", "attribute": {"value": "", "direct": False}}
+        node_info = {"id": "default_worker", "name": "DefaultWorker", "attribute": {"value": "", "direct_response": False}}
         
         return node_info, params
 

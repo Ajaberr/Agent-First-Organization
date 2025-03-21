@@ -10,8 +10,6 @@ class BotConfig(BaseModel):
     version: str
     language: str
     bot_type: str
-    available_workers: list[dict[str, str]]
-
 
 ### Message-related classes
 
@@ -56,6 +54,7 @@ class Verification(BaseModel):
 class StatusEnum(Enum):
     COMPLETE = "complete"
     INCOMPLETE = "incomplete"
+    STAY = "stay"
 
 
 class MessageState(TypedDict):

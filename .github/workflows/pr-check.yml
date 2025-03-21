@@ -1,0 +1,59 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-pr-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description for required fields
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          MISSING_FIELDS=()
+          check_section() {
+            local section="$1"
+            local min_words="$2"
+            echo "Checking section: $section"
+            # Get content between sections, excluding comments and checkboxes
+            local content
+            content=$(echo "$PR_BODY" | \
+              sed -n "/$section/,/^## /p" | \
+              sed '1d;$d' | \
+              sed 's/<!--.*-->//g' | \
+              sed 's/- \[ \].*//g' | \
+              sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
+              grep -v "^$" || true)
+            # Count actual words (excluding punctuation and special characters)
+            local word_count
+            word_count=$(echo "$content" | tr -d '[:punct:]' | wc -w)
+            echo "Content found ($word_count words):"
+            echo "$content"
+            echo "---"
+            if [ "$word_count" -lt "$min_words" ]; then
+              MISSING_FIELDS+=("$section")
+              echo "❌ Section needs at least $min_words words of content"
+            else
+              echo "✅ Section has sufficient content"
+            fi
+          }
+          echo "Checking PR description sections..."
+          # Check each required section with minimum word count
+          check_section "## Summary" 5
+          check_section "## Description" 10
+          check_section "## Tests" 10
+          if [ ${#MISSING_FIELDS[@]} -ne 0 ]; then
+            echo "❌ Error: The following sections need more content:"
+            printf '%s\n' "${MISSING_FIELDS[@]}"
+            echo ""
+            echo "Requirements:"
+            echo "- Summary section: at least 5 words"
+            echo "- Description section: at least 10 words"
+            echo "- Tests section: at least 10 words"
+            echo "- Checkboxes and comments don't count as content"
+            echo "- Content must be descriptive and meaningful"
+            exit 1
+          fi
+          echo "✅ All sections have sufficient content"
