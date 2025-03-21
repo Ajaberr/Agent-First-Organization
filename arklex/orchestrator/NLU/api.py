@@ -20,13 +20,31 @@ from arklex.utils.model_provider_config import PROVIDER_MAP
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers.openai_tools import  JsonOutputToolsParser
 import re
-import google.generativeai as genai
+from pydantic_ai import Agent
+from typing import  Optional, Union, List
+from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT_NLU = """According to the conversation, decide what is the user's intent in the last turn? \nHere are the definitions for each intent:\n{definition}\nHere are some sample utterances from user that indicate each intent:\n{exemplars}\nConversation:\n{formatted_chat}\n\nOnly choose from the following options.\n{intents_choice}\n\nAnswer:
 """
+
+def create_slots_class():
+        class Slot(BaseModel):
+            name: str
+            type: Union[str, int, float, bool] = None
+            value: Union[str, int, float, bool, List[str]] = None
+            enum: Optional[list[Union[str, int, float, bool]]]
+            description: str
+            prompt: str
+            required: bool
+            verified: bool
+
+        class Slots(BaseModel):
+            slots: list[Slot]
+    
+        return Slots
 
 class NLUModelAPI ():
     def __init__(self):
@@ -133,7 +151,7 @@ class SlotFillModelAPI():
         self.user_prefix = "user"
         self.assistant_prefix = "assistant"
 
-    def get_response(self, sys_prompt,model, debug_text="none", text=" ", format=Slots):
+    def get_response(self, sys_prompt, debug_text="none", format=Slots):
         logger.info(f"gpt system_prompt for {debug_text} is \n{sys_prompt}")
         dialog_history = [{"role": "system", "content": sys_prompt}]
         kwargs = {'model': MODEL["model_type_or_path"], 'temperature': 0.7}
@@ -144,32 +162,29 @@ class SlotFillModelAPI():
         if MODEL['llm_provider'] == 'openai':
             llm = llm.with_structured_output(schema=format)
             response = llm.invoke(dialog_history)
-        #for claude & gemini
+    
+        elif MODEL['llm_provider']=='huggingface':
+            llm = llm.bind_tools([format])
+            chain =  llm | JsonOutputToolsParser()
+            res = chain.invoke(dialog_history)
+
+        elif MODEL['llm_provider'] == 'gemini':
+            if format == Slots:
+                agent = Agent(f"google-gla:{MODEL['model_type_or_path']}", 
+                            result_type=create_slots_class())
+            else:
+                agent = Agent(f"google-gla:{MODEL['model_type_or_path']}", 
+                            result_type=format)
+
+            result = agent.run_sync(dialog_history[0]['content'])
+            response = result.data
+        #for claude 
         else:
             messages = [{"role": "user", "content": dialog_history[0]['content']}]
             llm = llm.bind_tools([format])
-            chain =  llm | JsonOutputToolsParser()
-            res = chain.invoke(messages)
-            if not res:
-                logger.warning(f"Empty response for {debug_text}. Returning empty Slots object.")
-                response = Slots(slots=[])
-            else:
-                properties = res[0]['args']
-                if 'properties' in properties:
-                    properties = properties['properties']
-        
-                if isinstance(properties, str):
-                    try:
-                        properties = re.sub(r'\\(?![\"\\/bfnrtu])', r'\\\\', properties)
-                        properties = json.loads(properties)
-                    except json.JSONDecodeError as e:
-                        print(f"Error parsing JSON: {e}")
-                        return None
-
-                slots_data = properties.get('slots', [])
-                response = Slots(slots=[Slot(**slot) for slot in slots_data])
-            
-
+            res= llm.invoke(messages)
+            response = format(**res.tool_calls[0]['args'])
+       
         logger.info(f"response for {debug_text} is \n{response}")
         return response
 
@@ -182,15 +197,13 @@ class SlotFillModelAPI():
         self,
         slots,
         chat_history_str,
-        model
     ):
         slots = [Slot(**slot_data) for slot_data in slots]
         system_prompt = self.format_input(
             slots, chat_history_str
         )
-        user_input =  chat_history_str.splitlines()[-1].split('user:')[-1].strip()
         response = self.get_response(
-            system_prompt,model, debug_text="get slots", text=user_input
+            system_prompt, debug_text="get slots"
         )
         if not response:
             logger.info(f"Failed to update dialogue states")
@@ -202,12 +215,11 @@ class SlotFillModelAPI():
         self,
         slot: dict,
         chat_history_str,
-        model
     ) -> Verification:
         reformat_slot = {key: value for key, value in slot.items() if key in ["name", "type", "value", "enum", "description", "required"]}
         system_prompt = f"Given the conversation, definition and extracted value of each dialog state, decide whether the following dialog states values need further verification from the user. Verification is needed for expressions which may cause confusion. If it is an accurate information extracted, no verification is needed. If there is a list of enum value, which means the value has to be chosen from the enum list. Only Return boolean value: True or False. \nDialogue Statues:\n{reformat_slot}\nConversation:\n{chat_history_str}\n\n"
         response = self.get_response(
-            system_prompt, model,debug_text="verify slots", format=Verification
+            system_prompt,debug_text="verify slots", format=Verification
         )
         if not response: # no need to verification, we want to make sure it is really confident that we need to ask the question again
             logger.info(f"Failed to verify dialogue states")
