@@ -256,6 +256,179 @@ There are several steps for the implementation of this function:
     )
   ```
 
+
+### find_owner_id_by_contact_id(customer_contact_information, **kwargs):
+The function finds the owner_id of the customer based on the existing contact.
+
+Inputs:
+* `customer_contact_information`: It contains id, email, first_name and last_name of the customer. 
+* `**kwargs`: contains the **access token** for the hubspot private app
+
+Output:
+* `owner_id`: id of the owner corresponding to the customer
+
+Get the `owner_id` from the properties of the contact:
+```python
+get_owner_id_response = api_client.api_request(
+            {
+                "path": "/crm/v3/objects/contacts/{}".format(customer_id),
+                "method": "GET",
+                "headers": {
+                    'Content-Type': 'application/json'
+                },
+                "qs": {
+                    "properties": 'hubspot_owner_id'
+                }
+            }
+
+        )
+```
+
+
+![hubspot_owner.png](../../static/img/hubspot/hubspot_owner.png)
+
+### check_available(owner_id, time_zone, meeting_date, **kwargs):
+This function aims to search for the unavailable slots of the owner.
+
+Inputs:
+* `owner_id`: id of the owner. 
+* `time_zone`: the timezone of the customer's location
+* `meeting_date`: the date when customer want to schedule a meeting
+* `**kwargs`: contains the **access token** for the hubspot private app
+
+Output:
+* `meeting_link_related_info`: the available time slots (milliseconds) of the owner
+
+To achieve the goal of the function, several steps are implemented:
+* Using the *owner_id* to retrieve the meeting scheduler link of the owner. If there is no corresponding link of that owner, 
+`MEETING_LINK_UNFOUND_ERROR` will be returned.
+
+```python
+meeting_link_response = api_client.api_request(
+            {
+                "path": "/scheduler/v3/meetings/meeting-links",
+                "method": "GET",
+                "headers": {
+                    'Content-Type': 'application/json'
+                },
+                "qs": {
+                    'organizerUserId': owner_id
+                }
+            }
+        )
+        meeting_link_response = meeting_link_response.json()
+
+        if meeting_link_response.get('total') == 0:
+            return MEETING_LINK_UNFOUND_ERROR
+        else:
+            meeting_links = meeting_link_response['results'][0]
+```
+
+The meeting scheduler link on hubspot is like below:
+
+![hubspot_meeting_1.png](../../static/img/hubspot/hubspot_meeting_1.png)
+
+* After getting the meeting link of the owner, `slug` is used to get the unavailable time slots of the owner:
+
+```python
+        try:
+            availability_response = api_client.api_request(
+                {
+                    "path": "/scheduler/v3/meetings/meeting-links/book/{}".format(meeting_slug),
+                    "method": "GET",
+                    "headers": {
+                        'Content-Type': 'application/json'
+                    },
+                    "qs": {
+                        'timezone': time_zone
+                    }
+                }
+            )
+            cal = parsedatetime.Calendar()
+            time_struct, _ = cal.parse(meeting_date)
+            meeting_date = datetime(*time_struct[:3])
+            availability_response = availability_response.json()
+            busy_times = availability_response['allUsersBusyTimes'][0]['busyTimes']
+```
+
+The unavailable time slots will not be shown on the meeting scheduler on hubspot. It is very clear to see the difference comparing to the above picture.
+
+![hubspot_meeting_2.png](../../static/img/hubspot/hubspot_meeting_2.png)
+
+### create_meeting(customer_contact_information, meeting_date, meeting_start_time, duration, meeting_link_related_info, time_zone, **kwargs):
+This function will help the customer to schedule a meeting
+
+Inputs:
+* `customer_contact_information`: It contains id, email, first_name and last_name of the customer. 
+* `meeting_date`: the date when customer want to schedule a meeting
+* `meeting_start_time`: the exact time the customer wish to begin
+* `duration`: the duration of the meeting (e.g. 15, 30, 60 minutes)
+* `meeting_link_related_info`: the unavailable time slots of the owner
+* `time_zone`: the timezone of the customer's location
+* `**kwargs`: contains the **access token** for the hubspot private app
+
+Output:
+* `meeting_confirmation_info`: the scheduled meeting information
+
+* Firstly, the start time of the meeting will be checked within the unavailable slots. 
+If the `start_time` and `end_time` of the meeting are in the unavailable slots, `UNAVAILABLE_ERROR` will be returned.
+
+```python
+    meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
+    meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
+    meeting_start_time = int(meeting_start_time.timestamp() * 1000)
+
+
+    duration = int(duration)
+    duration = int(timedelta(minutes=duration).total_seconds() * 1000)
+
+    meeting_link_related_info = ast.literal_eval(meeting_link_related_info)
+    meeting_slug = meeting_link_related_info.get('slug')
+    unavailable_time_slots = meeting_link_related_info.get('busy_time_slots_unix')
+
+    meeting_end_time = meeting_start_time + duration
+    for time_slot in unavailable_time_slots:
+        if meeting_start_time >= time_slot['start'] and meeting_start_time < time_slot['end']:
+            return UNAVAILABLE_ERROR
+        elif meeting_end_time >= time_slot['start'] and meeting_end_time <= time_slot['end']:
+            return UNAVAILABLE_ERROR
+```
+
+* Then, schedule the meeting with the owner:
+
+```python
+    try:
+        create_meeting_response = api_client.api_request(
+            {
+                "path": "/scheduler/v3/meetings/meeting-links/book",
+                "method": "POST",
+                "body": {
+                    "slug": meeting_slug,
+                    "duration": duration,
+                    "startTime": meeting_start_time,
+                    "email": customer_email,
+                    "firstName": customer_first_name,
+                    "lastName": customer_last_name,
+                    "timezone": time_zone,
+                    "locale": "en-us",
+                },
+                "qs": {
+                    'timezone': time_zone
+                }
+            }
+
+        )
+        create_meeting_response = create_meeting_response.json()
+        return json.dumps(create_meeting_response)
+    except ApiException as e:
+        logger.info("Exception when scheduling a meeting: %s\n" % e)
+```
+
+Because hubspot is synchronized with Google Calendar, the meeting information will also be shown on the calendar:
+
+![hubspot_cal.png](../../static/img/hubspot/hubspot_cal.png)
+
+
 ## Taskgraph
 **Fields**:
 * `nodes`: The nodes in the TaskGraph, each node contains the worker/tool name, task, and the directed attribute.
@@ -313,19 +486,19 @@ So the taskgraph to handle these two cases is shown below:
       "2",
       {
         "resource": {
-          "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
-          "name": "create_ticket"
+          "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
+          "name": "FaissRAGWorker"
         },
         "attribute": {
           "value": "",
-          "task": "create the ticket for the existing customer",
+          "task": "Retrieve information from the documentations to answer customer question",
           "directed": false
         },
         "limit": 1
       }
     ],
     [
-      "4",
+      "3",
       {
         "resource": {
           "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
@@ -340,15 +513,75 @@ So the taskgraph to handle these two cases is shown below:
       }
     ],
     [
-      "3",
+      "4",
       {
         "resource": {
-          "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
-          "name": "FaissRAGWorker"
+          "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
+          "name": "create_ticket"
         },
         "attribute": {
           "value": "",
-          "task": "Retrieve information from the documentations to answer customer question",
+          "task": "create the ticket for the existing customer",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "5",
+      {
+        "resource": {
+          "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
+          "name": "search_customer"
+        },
+        "attribute": {
+          "value": "",
+          "task": "Detect whether this is the existing customer from our hubspot platform",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "6",
+      {
+        "resource": {
+          "id": "11860b97-dfcf-4f1d-9e44-8767c50fd371",
+          "name": "find_owner_id_by_contact_id"
+        },
+        "attribute": {
+          "value": "",
+          "task": "find the owner id of the contact",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "7",
+      {
+        "resource": {
+          "id": "8a6784c2-a130-4eb4-9924-4f4c58f4bf9d",
+          "name": "check_available"
+        },
+        "attribute": {
+          "value": "",
+          "task": "Show customer the busy time the representative has",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "8",
+      {
+        "resource": {
+          "id": "e86daf21-41a3-40b2-9695-3ed59be46cc4",
+          "name": "create_meeting"
+        },
+        "attribute": {
+          "value": "",
+          "task": "schedule a meeting for the customer to the specific representative",
           "directed": false
         },
         "limit": 1
@@ -370,20 +603,7 @@ So the taskgraph to handle these two cases is shown below:
       }
     ],
     [
-      "0",
-      "4",
-      {
-        "intent": "User need technical support/User need repair service / User need exchange service",
-        "attribute": {
-          "weight": 1,
-          "pred": true,
-          "definition": "",
-          "sample_utterances": []
-        }
-      }
-    ],
-    [
-      "4",
+      "1",
       "2",
       {
         "intent": "none",
@@ -396,8 +616,73 @@ So the taskgraph to handle these two cases is shown below:
       }
     ],
     [
-      "1",
+      "0",
       "3",
+      {
+        "intent": "User need technical support/User need repair service / User need exchange service",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "3",
+      "4",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "0",
+      "5",
+      {
+        "intent": "User want to schedule a meeting with the representative",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "5",
+      "6",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "6",
+      "7",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "7",
+      "8",
       {
         "intent": "none",
         "attribute": {
@@ -424,13 +709,37 @@ So the taskgraph to handle these two cases is shown below:
       "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
       "name": "find_contact_by_email",
       "path": "hubspot.find_contact_by_email",
-      "fixed_args": { "access_token": "<access-token>" }
+      "fixed_args": { "access_token": "<access_token>" }
     },
     {
       "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
       "name": "create_ticket",
       "path": "hubspot.create_ticket",
-      "fixed_args": { "access_token": "<access-token>" }
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "8a6784c2-a130-4eb4-9924-4f4c58f4bf9d",
+      "name": "check_available",
+      "path": "hubspot.check_available",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "e86daf21-41a3-40b2-9695-3ed59be46cc4",
+      "name": "create_meeting",
+      "path": "hubspot.create_meeting",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "1437160f-6036-4fc9-99db-0e45afabd03c",
+      "name": "find_owner_by_owner_id",
+      "path": "hubspot.find_owner_by_owner_id",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "11860b97-dfcf-4f1d-9e44-8767c50fd371",
+      "name": "find_owner_id_by_contact_id",
+      "path": "hubspot.find_owner_id_by_contact_id",
+      "fixed_args": { "access_token": "<access_token>" }
     }
   ],
   "workers": [
@@ -443,6 +752,11 @@ So the taskgraph to handle these two cases is shown below:
       "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
       "name": "FaissRAGWorker",
       "path": "faiss_rag_worker.py"
+    },
+    {
+      "id": "b10555ac-0930-42c0-9016-6605f956e411",
+      "name": "DefaultWorker",
+      "path": "default_worker.py"
     }
   ],
   "nluapi": "",
