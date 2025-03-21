@@ -7,6 +7,93 @@ class ShopifySlots:
         slot["description"] = f"List of {slot['name']}. {slot['description']}"
         return slot
     
+    @classmethod
+    def get_all_slots(cls):
+        return [slot for slot in cls.__dict__.values() if isinstance(slot, dict) or isinstance(slot, list)]
+
+    USER_ID = {
+        "name": "user_id",
+        "type": "string",
+        "description": "The user id, such as 'gid://shopify/Customer/13573257450893'.",
+        "prompt": "In order to proceed, please login to Shopify.",
+        "verified": True
+    }
+    
+    PRODUCT_ID = {
+        "name": "product_id",
+        "type": "string",
+        "description": "The product id, such as 'gid://shopify/Product/2938501948327'.", # If there is only 1 product, return in list with single item. If there are multiple product ids, please return all of them in a list.",
+        "prompt": "In order to proceed, please choose a specific product.",
+        "verified": True
+    }
+    PRODUCT_IDS = to_list(PRODUCT_ID)
+    
+    CART_ID = {
+        "name": "cart_id",
+        "type": "str",
+        "description": "The cart id, such as 'gid://shopify/Cart/2938501948327'.",
+        "prompt": "In order to proceed, please create a shopping cart.",
+        "verified": True
+    }
+
+    QUERY_LIMIT = {
+        "name": "limit",
+        "type": "string",
+        "description": "Maximum number of products to show.",
+        "prompt": "",
+        "verified": True
+    }
+    
+    # Not in user as of 03.11.2025
+    # LINE_ID = {
+    #     "name": "line_id",
+    #     "type": "str",
+    #     "description": "The line id for a line entry in the cart such as 'gid://shopify/CartLine/b3dbff2e-4e9a-4ce0-9f15-5fa8f61882e1?cart=Z2NwLXVzLWVhc3QxOjAxSkpDTjBQSDVLR1JaRkZHMkE3UlZSVjhX'",
+    #     "prompt": "",
+    #     "verified": True
+    # }
+    # LINE_IDS = to_list(LINE_ID)
+    
+    # UPDATE_LINE_ITEM = {
+    #     "name": "line_ids",
+    #     "type": "list",
+    #     "items": "str",
+    #     "description": "list of (line_id, item_id, quantity) tuples of lineItem to add to the cart such as [('gid://shopify/CartLine/db5cb3dd-c830-482e-88cd-99afe8eafa3f?cart=Z2NwLXVzLWVhc3QxOjAxSkpEM0JLNU1KMUI2UFRYRTNFS0NNTllW', None, 69)]",
+    #     "prompt": "",
+    #     "verified": True
+    # }
+
+    # REFRESH_TOKEN = {
+    #     "name": "refresh_token",
+    #     "type": "str",
+    #     "description": "customer's shopify refresh_token retrieved from authenticating",
+    #     "prompt": "",
+    #     "verified": True
+    # }
+    
+
+class ShopifyCancelOrderSlots(ShopifySlots):
+    CANCEL_ORDER_ID = {
+        "name": "cancel_order_id",
+        "type": "string",
+        "description": "The order id to cancel, such as gid://shopify/Order/1289503851427.",
+        "prompt": "Please provide the order id that you would like to cancel.",
+        "required": True,
+        "verified": True
+    }
+
+class ShopifyCartAddItemsSlots(ShopifySlots):
+    CART_ID = {**ShopifySlots.CART_ID, "required": True}
+    ADD_LINE_ITEM = {
+        "name": "add_line_items",
+        "type": "list",
+        "description": "list of ProductVariant ids to be added to the shopping cart, such as ['gid://shopify/ProductVariant/41552094527601', 'gid://shopify/ProductVariant/41552094494833'].",
+        "prompt": "Please confirm the items to add to the cart.",
+        "required": True,
+        "verified": True
+    }
+
+class ShopifyFindUserByEmailSlots(ShopifySlots):
     USER_EMAIL = {
         "name": "user_email",
         "type": "string",
@@ -16,53 +103,53 @@ class ShopifySlots:
         "verified": True
     }
 
-    USER_ID = {
-        "name": "user_id",
-        "type": "string",
-        "description": "The user id, such as 'gid://shopify/Customer/13573257450893'.",
-        "prompt": "In order to proceed, Could you please provide the user id?",
-        "required": True,
-        "verified": True
-    }
-    
-    REFRESH_TOKEN = {
-        "name": "refresh_token",
-        "type": "str",
-        "description": "customer's shopify refresh_token retrieved from authenticating",
-        "prompt": "",
-        "required": True,
-        "verified": True
-    }
+class ShopifyGetCartSlots(ShopifySlots):
+    CART_ID = {**ShopifySlots.CART_ID, "required": True}
 
+class ShopifyGetOrderDetailsSlots(ShopifySlots):
+    USER_ID = {**ShopifySlots.USER_ID, "required": True}
+    ORDER_IDS = ShopifySlots.to_list(
+        {
+            "name": "order_id",
+            "type": "string",
+            "description": "The order id, such as gid://shopify/Order/1289503851427.",
+            "prompt": "Please provide the order id to get the details of the order.",
+            "required": False,
+            "verified": True
+        }
+    )
+    ORDER_NAMES = ShopifySlots.to_list(
+        {
+            "name": "order_name",
+            "type": "string",
+            "description": "The order name, such as '#1001'.",
+            "prompt": "Please provide the order name to get the details of the order.",
+            "required": False,
+            "verified": True
+        }
+    )
+
+
+class ShopifyGetProductImagesSlots(ShopifySlots):
+    PRODUCT_IDS = {**ShopifySlots.PRODUCT_IDS, "required": True}
+
+class ShopifyGetProductsSlots(ShopifySlots):
+    PRODUCT_IDS = {**ShopifySlots.PRODUCT_IDS, "required": True}
+
+class ShopifyGetUserDetailsAdminSlots(ShopifySlots):
+    USER_ID = {**ShopifySlots.USER_ID, "required": True}
+
+class ShopifyGetWebProductSlots(ShopifySlots):
     WEB_PRODUCT_ID = {
         "name": "web_product_id",
         "type": "string",
         "description": "The product id that the user is currently seeing, such as 'gid://shopify/Product/2938501948327'.", # If there is only 1 product, return in list with single item. If there are multiple product ids, please return all of them in a list.",
-        "prompt": "In order to proceed, please provide the product id.",
+        "prompt": "In order to proceed, please choose a specific product.",
         "required": True,
         "verified": True
     }
-    
-    PRODUCT_ID = {
-        "name": "product_id",
-        "type": "string",
-        "description": "The product id, such as 'gid://shopify/Product/2938501948327'.", # If there is only 1 product, return in list with single item. If there are multiple product ids, please return all of them in a list.",
-        "prompt": "In order to proceed, please provide the product id.",
-        "required": True,
-        "verified": True
-    }
-    PRODUCT_IDS = to_list(PRODUCT_ID)
-    
-    ORDER_ID = {
-        "name": "order_id",
-        "type": "string",
-        "description": "The order id, such as gid://shopify/Order/1289503851427.",
-        "prompt": "Please provide the order id to get the details of the order.",
-        "required": True,
-        "verified": True
-    }
-    ORDERS_ID = to_list(ORDER_ID)
 
+class ShopifyReturnProductsSlots(ShopifySlots):
     RETURN_ORDER_ID = {
         "name": "return_order_id",
         "type": "string",
@@ -72,72 +159,7 @@ class ShopifySlots:
         "verified": True
     }
 
-    CANCEL_ORDER_ID = {
-        "name": "cancel_order_id",
-        "type": "string",
-        "description": "The order id to cancel, such as gid://shopify/Order/1289503851427.",
-        "prompt": "Please provide the order id that you would like to cancel.",
-        "required": True,
-        "verified": True
-    }
-    
-    COLLECTION_ID = {
-        "name": "collection_id",
-        "type": "str",
-        "description": "The collection id, such as 'gid://shopify/Collection/2938501948327'.",
-        "prompt": "",
-        "required": True,
-        "verified": True
-    }
-    COLLECTION_IDS = to_list(COLLECTION_ID)
-    
-    CART_ID = {
-        "name": "cart_id",
-        "type": "str",
-        "description": "The cart id, such as 'gid://shopify/Cart/2938501948327'.",
-        "prompt": "",
-        "required": True,
-        "verified": True
-    }
-    
-    LINE_ID = {
-        "name": "line_id",
-        "type": "str",
-        "description": "The line id for a line entry in the cart such as 'gid://shopify/CartLine/b3dbff2e-4e9a-4ce0-9f15-5fa8f61882e1?cart=Z2NwLXVzLWVhc3QxOjAxSkpDTjBQSDVLR1JaRkZHMkE3UlZSVjhX'",
-        "prompt": "",
-        "required": True,
-        "verified": True
-    }
-    LINE_IDS = to_list(LINE_ID)
-    
-    ADD_LINE_ITEM = {
-        "name": "add_line_items",
-        "type": "list",
-        "description": "list of ProductVariant ids to be added to the shopping cart, such as ['gid://shopify/ProductVariant/41552094527601', 'gid://shopify/ProductVariant/41552094494833'].",
-        "prompt": "Please confirm the items to add to the cart.",
-        "required": True,
-        "verified": True
-    }
-    
-    UPDATE_LINE_ITEM = {
-        "name": "line_ids",
-        "type": "list",
-        "items": "str",
-        "description": "list of (line_id, item_id, quantity) tuples of lineItem to add to the cart such as [('gid://shopify/CartLine/db5cb3dd-c830-482e-88cd-99afe8eafa3f?cart=Z2NwLXVzLWVhc3QxOjAxSkpEM0JLNU1KMUI2UFRYRTNFS0NNTllW', None, 69)]",
-        "prompt": "",
-        "required": True,
-        "verified": True
-    }
-
-    SEARCH_COLLECTION_QUERY = {
-        "name": "collection_query",
-        "type": "string",
-        "description": "The string query to search collections, such as 'Hats'. If query is empty string, it returns all collections.",
-        "prompt": "In order to proceed, please provide a query for the collections search.",
-        "required": False,
-        "verified": True
-    }
-
+class ShopifySearchProductsSlots(ShopifySlots):
     SEARCH_PRODUCT_QUERY = {
         "name": "product_query",
         "type": "string",
@@ -147,17 +169,6 @@ class ShopifySlots:
         "verified": True
     }
 
-    QUERY_LIMIT = {
-        "name": "limit",
-        "type": "string",
-        "description": "Maximum number of products to show.",
-        "prompt": "",
-        "required": False,
-        "verified": True
-    }
-    
-        
-    
 
 class ShopifyOutputs:
     USER_ID = {

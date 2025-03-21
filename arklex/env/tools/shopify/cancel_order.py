@@ -5,18 +5,14 @@ import logging
 # general GraphQL navigation utilities
 from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.shopify.utils import authorify_admin
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifyCancelOrderSlots, ShopifyOutputs
 
 from arklex.env.tools.tools import register_tool
 
 logger = logging.getLogger(__name__)
 
 description = "Cancel order by order id."
-slots = [
-    ShopifySlots.CANCEL_ORDER_ID,
-    *PAGEINFO_SLOTS
-]
-
+slots = ShopifyCancelOrderSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.CANECEL_REQUEST_DETAILS,
 ]

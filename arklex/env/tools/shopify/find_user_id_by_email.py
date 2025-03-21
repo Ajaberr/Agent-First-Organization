@@ -5,12 +5,10 @@ import shopify
 
 from arklex.env.tools.tools import register_tool
 from arklex.env.tools.shopify.utils import authorify_admin
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifyFindUserByEmailSlots, ShopifyOutputs
 
 description = "Find user id by email. If the user is not found, the function will return an error message."
-slots = [
-    ShopifySlots.USER_EMAIL
-]
+slots = ShopifyFindUserByEmailSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.USER_ID
 ]

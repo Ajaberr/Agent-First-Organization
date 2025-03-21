@@ -1,4 +1,4 @@
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifyGetCartSlots, ShopifyOutputs
 from arklex.env.tools.shopify.utils_cart import *
 from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.tools import register_tool
@@ -8,10 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 description = "Get cart information"
-slots = [
-    ShopifySlots.CART_ID,
-    *PAGEINFO_SLOTS
-]
+slots = ShopifyGetCartSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.GET_CART_DETAILS,
     *PAGEINFO_OUTPUTS

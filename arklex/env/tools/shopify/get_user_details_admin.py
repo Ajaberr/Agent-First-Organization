@@ -3,7 +3,7 @@ import json
 
 from arklex.env.tools.tools import register_tool
 
-from arklex.env.tools.shopify.utils_slots import ShopifySlots, ShopifyOutputs
+from arklex.env.tools.shopify.utils_slots import ShopifyGetUserDetailsAdminSlots, ShopifyOutputs
 from arklex.env.tools.shopify.utils_nav import *
 from arklex.env.tools.shopify.utils import authorify_admin
 
@@ -11,10 +11,7 @@ from arklex.env.tools.shopify.utils import authorify_admin
 import shopify
 
 description = "Get the details of a user with Admin API."
-slots = [
-    ShopifySlots.USER_ID,
-    *PAGEINFO_SLOTS
-]
+slots = ShopifyGetUserDetailsAdminSlots.get_all_slots()
 outputs = [
     ShopifyOutputs.USER_DETAILS,
     *PAGEINFO_OUTPUTS
