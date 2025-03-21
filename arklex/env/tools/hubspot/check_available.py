@@ -1,15 +1,12 @@
-from arklex.env.tools.tools import register_tool, logger
-import ast
+from datetime import datetime
+
 import hubspot
-from hubspot.crm.objects.meetings.models import SimplePublicObjectInputForCreate
-from arklex.env.tools.hubspot.utils import HUBSPOT_AUTH_ERROR
-from hubspot.crm.objects.meetings import ApiException
 import parsedatetime
-from datetime import datetime, timedelta
-from dateutil import parser
-from pprint import pprint
-import json
-import pytz
+from hubspot.crm.objects.meetings import ApiException
+
+from arklex.env.tools.tools import register_tool, logger
+from arklex.env.tools.hubspot.utils import HUBSPOT_AUTH_ERROR
+
 
 description = "Give the customer that the unavailable time of the specific representative and the representative's related meeting link information."
 

@@ -1,11 +1,14 @@
-from arklex.env.tools.tools import register_tool, logger
 import ast
+from datetime import datetime
+
 import hubspot
 from hubspot.crm.objects.emails import ApiException
 from hubspot.crm.associations.v4 import AssociationSpec
 from hubspot.crm.tickets.models import SimplePublicObjectInputForCreate
+
+from arklex.env.tools.tools import register_tool, logger
 from arklex.env.tools.hubspot.utils import HUBSPOT_AUTH_ERROR
-from datetime import datetime
+
 
 description = "Create a ticket for the existing customer when the customer has some problem about the specific product."
 

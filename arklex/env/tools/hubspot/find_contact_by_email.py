@@ -1,10 +1,13 @@
 from datetime import datetime, timezone
-from arklex.env.tools.tools import register_tool, logger
+
 import hubspot
 from hubspot.crm.objects.emails import PublicObjectSearchRequest, ApiException
 from hubspot.crm.objects.communications.models import SimplePublicObjectInputForCreate
 from hubspot.crm.associations.v4 import AssociationSpec
+
+from arklex.env.tools.tools import register_tool, logger
 from arklex.env.tools.hubspot.utils import HUBSPOT_AUTH_ERROR
+
 
 description = "Find the contacts record by email. If the record is found, the lastmodifieddate of the contact will be updated. If the correspodning record is not found, the function will return an error message."
 

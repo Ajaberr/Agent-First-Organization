@@ -1,16 +1,15 @@
+import ast
 import json
+from datetime import datetime, timedelta
+import pytz
+
+import hubspot
+import parsedatetime
+from hubspot.crm.objects.meetings import ApiException
 
 from arklex.env.tools.tools import register_tool, logger
-import ast
-import hubspot
-from hubspot.crm.objects.meetings.models import SimplePublicObjectInputForCreate
 from arklex.env.tools.hubspot.utils import HUBSPOT_AUTH_ERROR
-from hubspot.crm.objects.meetings import ApiException
-import parsedatetime
-from datetime import datetime, timedelta
-from dateutil import parser
-from pprint import pprint
-import pytz
+
 
 description = "Schedule a meeting for the existing customer with the specific representative."
 
