@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timezone
-from ..tools import register_tool, logger
+from arklex.env.tools.tools import register_tool, logger
 import hubspot
 from hubspot.crm.objects.emails import PublicObjectSearchRequest, ApiException
 from hubspot.crm.objects.communications.models import SimplePublicObjectInputForCreate

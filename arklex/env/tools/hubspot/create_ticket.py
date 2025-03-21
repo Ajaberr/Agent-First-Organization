@@ -1,4 +1,4 @@
-from ..tools import register_tool, logger
+from arklex.env.tools.tools import register_tool, logger
 import ast
 import hubspot
 from hubspot.crm.objects.emails import ApiException
