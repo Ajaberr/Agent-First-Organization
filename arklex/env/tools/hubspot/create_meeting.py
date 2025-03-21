@@ -26,14 +26,14 @@ slots = [
     {
         "name": "meeting_date",
         "type": "string",
-        "description": "The exact date the customer want to take meeting with the representative. e.g. today, Next Monday, May 1st.",
+        "description": "The exact date the customer want to take meeting with the representative. e.g. tomorrow, today, Next Monday, May 1st. If you are not sure about the input, ask the user to give you confirmation.",
         "prompt": "Could you please give me the date of the meeting?",
         "required": True,
     },
     {
         "name": "meeting_start_time",
         "type": "string",
-        "description": "The exact start time the customer want to take meeting with the representative. e.g. 1pm",
+        "description": "The exact start time the customer want to take meeting with the representative. e.g. 1pm, 1:00 PM. If you are not sure about the input, ask the user to give you confirmation.",
         "prompt": "Could you please give me the start time of the meeting? Typically, the representative will hold the meeting from 9:00 am to 4:45 pm.",
         "required": True,
     },
@@ -134,7 +134,6 @@ def create_meeting(customer_contact_information: str,meeting_date: str,
 
         )
         create_meeting_response = create_meeting_response.json()
-        pprint(create_meeting_response)
         return json.dumps(create_meeting_response)
     except ApiException as e:
         logger.info("Exception when scheduling a meeting: %s\n" % e)
