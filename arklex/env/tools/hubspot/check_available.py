@@ -14,7 +14,7 @@ slots = [
     {
         "name": "owner_id",
         "type": "string",
-        "description": "The owner id of the owner, extracting from the tool \'find_owner_id_by_contact_id\'(It is actually a dict)",
+        "description": "The owner id of the owner, extracting from the tool \'find_owner_id_by_contact_id\'",
         "prompt": "",
         "required": True,
     },
