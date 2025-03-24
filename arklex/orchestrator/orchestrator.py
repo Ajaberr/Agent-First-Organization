@@ -55,7 +55,7 @@ class AgentOrg:
                     model=MODEL["model_type_or_path"],
                     temperature = 0.0,
                 )
-        if MODEL['llm_provider'] == 'gemini' or MODEL['llm_provider'] == 'anthropic':
+        if MODEL['llm_provider'] != 'openai':
             messages[0]['role'] = 'user'
        
         res = llm.invoke(messages)        
