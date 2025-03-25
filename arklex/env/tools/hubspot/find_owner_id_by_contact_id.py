@@ -10,12 +10,12 @@ description = "Find the owner id in the contact. If owner id is found, the next 
 
 slots = [
     {
-        "name": "customer_contact_information",
+        "name": "cus_cid",
         "type": "string",
-        "description": "After finding the exiting customer, the detailed information of the customer (actually a dict) is provided",
+        "description": "The id of the customer contact. Typically it is returned from find_contact_by_email.",
         "prompt": "",
         "required": True,
-    }
+    },
 ]
 
 outputs = [
@@ -31,19 +31,18 @@ errors = [
 ]
 
 @register_tool(description, slots, outputs, lambda x: x not in errors)
-def find_owner_id_by_contact_id(customer_contact_information, **kwargs) -> str:
+def find_owner_id_by_contact_id(cus_cid, **kwargs) -> str:
     access_token = kwargs.get('access_token')
     if not access_token:
         return HUBSPOT_AUTH_ERROR
 
-    customer_contact_information = ast.literal_eval(customer_contact_information)
-    customer_id = customer_contact_information.get('contact_id')
+
     api_client = hubspot.Client.create(access_token=access_token)
 
     try:
         get_owner_id_response = api_client.api_request(
             {
-                "path": "/crm/v3/objects/contacts/{}".format(customer_id),
+                "path": "/crm/v3/objects/contacts/{}".format(cus_cid),
                 "method": "GET",
                 "headers": {
                     'Content-Type': 'application/json'
@@ -58,6 +57,6 @@ def find_owner_id_by_contact_id(customer_contact_information, **kwargs) -> str:
 
         owner_id = get_owner_id_response['properties']['hubspot_owner_id']
 
-        return str(owner_id)
+        return owner_id
     except ApiException as e:
         logger.info("Exception when extracting owner_id of one contact: %s\n" % e)

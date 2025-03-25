@@ -16,9 +16,23 @@ description = "Schedule a meeting for the existing customer with the specific re
 
 slots = [
     {
-        "name": "customer_contact_information",
+        "name": "cus_fname",
         "type": "string",
-        "description": "After finding the exiting customer, the detailed information of the customer (actually a dict) is provided",
+        "description": "The first name of the customer contact. Typically it is returned from find_contact_by_email.",
+        "prompt": "",
+        "required": True,
+    },
+    {
+        "name": "cus_lname",
+        "type": "string",
+        "description": "The first name of the customer contact. Typically it is returned from find_contact_by_email.",
+        "prompt": "",
+        "required": True,
+    },
+    {
+        "name": "cus_email",
+        "type": "string",
+        "description": "The email of the customer contact. It is the user input of find_contact_by_email.",
         "prompt": "",
         "required": True,
     },
@@ -76,19 +90,12 @@ errors = [
 ]
 
 @register_tool(description, slots, outputs, lambda x: x not in errors)
-def create_meeting(customer_contact_information: str,meeting_date: str,
+def create_meeting(cus_fname: str, cus_lname: str, cus_email: str, meeting_date: str,
                    meeting_start_time: str, duration: int,
                    meeting_link_related_info: str, time_zone: str, **kwargs) -> str:
     access_token = kwargs.get('access_token')
     if not access_token:
         return HUBSPOT_AUTH_ERROR
-
-    customer_contact_information = ast.literal_eval(customer_contact_information)
-    customer_id = customer_contact_information.get('contact_id')
-    customer_first_name = customer_contact_information.get('contact_first_name')
-    customer_last_name = customer_contact_information.get('contact_last_name')
-    customer_email = customer_contact_information.get('contact_email')
-
 
     meeting_date = parse_natural_date(meeting_date, timezone=time_zone, date_input=True)
     meeting_start_time = parse_natural_date(meeting_start_time, meeting_date, timezone=time_zone)
@@ -120,9 +127,9 @@ def create_meeting(customer_contact_information: str,meeting_date: str,
                     "slug": meeting_slug,
                     "duration": duration,
                     "startTime": meeting_start_time,
-                    "email": customer_email,
-                    "firstName": customer_first_name,
-                    "lastName": customer_last_name,
+                    "email": cus_email,
+                    "firstName": cus_fname,
+                    "lastName": cus_lname,
                     "timezone": time_zone,
                     "locale": "en-us",
                 },
