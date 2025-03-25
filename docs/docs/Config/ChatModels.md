@@ -6,12 +6,16 @@
 - Models: `gpt-4o` (default), `gpt-4o-mini`
 
 **2\. Google Gemini**
-- Models: ` gemini-1.5-flash`, `gemini-2.0-flash-exp`, `gemini-2.0-flash-lite`
+- Models: ` gemini-1.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`
+
+- **NOTE:** Tool calling is only supported with `gemini-2.0-flash`
 
 **3\. Anthropic**
 - Models: `claude-3-5-haiku-20241022`, `claude-3-haiku-20240307`
 
-**NOTE:** Tool calling is only supported with `OpenAI` and `Anthropic` models
+**3\. Hugging Face**
+- Models: `microsoft/Phi-3-mini-4k-instruct`
+- **NOTE:** Tool calling is NOT supported for Hugging Face
 
 ## Taskgraph 
 - **Note:** Taskgraph construction with different models isn't supported at the time, only OpenAI can be used. Feature is planned to be implemented in the future.
@@ -40,6 +44,15 @@
     python run.py --input-dir ./examples/customer_service --model claude-3-5-haiku-20241022 --llm-provider anthropic
     ```
 
+### Hugging Face
+- Uses the [Hugging Face Inference API](https://huggingface.co/docs/api-inference/en/getting-started). 
+- Add your `HUGGINGFACE_API_KEY` to the `.env` file
+  - Follow these [instructions](https://huggingface.co/docs/api-inference/en/getting-started#getting-a-token) to get API key
+- Example usage:
+    ```
+    python run.py --input-dir ./examples/customer_service --model microsoft/Phi-3-mini-4k-instruct --llm-provider huggingface
+    ```
+- **NOTE** : You may need to request access to a specific model via the Hugging Face website
 
 
 ## Sample conversation
