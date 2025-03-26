@@ -1,4 +1,3 @@
-import ast
 from datetime import datetime
 
 import hubspot

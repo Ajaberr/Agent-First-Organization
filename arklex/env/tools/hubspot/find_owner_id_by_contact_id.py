@@ -1,5 +1,3 @@
-import ast
-
 import hubspot
 from hubspot.crm.objects.emails import ApiException
 
