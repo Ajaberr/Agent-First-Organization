@@ -59,9 +59,16 @@ slots = [
         "required": True,
     },
     {
-        "name": "meeting_link_related_info",
+        "name": "slug",
         "type": "string",
-        "description": "The unavailable time slots of the representative and the corresponding slug. This is actually a dict.",
+        "description": "The corresponding slug for the meeting link, which is extracted from check_available tool",
+        "prompt": "",
+        "required": True,
+    },
+    {
+        "name": "bt_slots_ux",
+        "type": "string",
+        "description": "The busy time slots (unix form) of the representative. This is extracted from check_available tool. This is a list of dict.",
         "prompt": "",
         "required": True,
     },
@@ -92,7 +99,7 @@ errors = [
 @register_tool(description, slots, outputs, lambda x: x not in errors)
 def create_meeting(cus_fname: str, cus_lname: str, cus_email: str, meeting_date: str,
                    meeting_start_time: str, duration: int,
-                   meeting_link_related_info: str, time_zone: str, **kwargs) -> str:
+                   slug: str, bt_slots_ux: str, time_zone: str, **kwargs) -> str:
     access_token = kwargs.get('access_token')
     if not access_token:
         return HUBSPOT_AUTH_ERROR
@@ -105,12 +112,10 @@ def create_meeting(cus_fname: str, cus_lname: str, cus_email: str, meeting_date:
     duration = int(duration)
     duration = int(timedelta(minutes=duration).total_seconds() * 1000)
 
-    meeting_link_related_info = ast.literal_eval(meeting_link_related_info)
-    meeting_slug = meeting_link_related_info.get('slug')
-    unavailable_time_slots = meeting_link_related_info.get('busy_time_slots_unix')
-
     meeting_end_time = meeting_start_time + duration
-    for time_slot in unavailable_time_slots:
+
+    bt_slots_ux = json.loads(bt_slots_ux)
+    for time_slot in bt_slots_ux:
         if meeting_start_time >= time_slot['start'] and meeting_start_time < time_slot['end']:
             return UNAVAILABLE_ERROR
         elif meeting_end_time >= time_slot['start'] and meeting_end_time <= time_slot['end']:
@@ -124,7 +129,7 @@ def create_meeting(cus_fname: str, cus_lname: str, cus_email: str, meeting_date:
                 "path": "/scheduler/v3/meetings/meeting-links/book",
                 "method": "POST",
                 "body": {
-                    "slug": meeting_slug,
+                    "slug": slug,
                     "duration": duration,
                     "startTime": meeting_start_time,
                     "email": cus_email,

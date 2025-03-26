@@ -36,7 +36,7 @@ slots = [
 ]
 outputs = [
     {
-        "name": "meeting_link_related_info",
+        "name": "meeting_info",
         "type": "string",
         "description": "The unavailable time slots of the representative and the corresponding slug.",
     }
@@ -57,7 +57,7 @@ def check_available(owner_id: str, time_zone: str, meeting_date: str, **kwargs) 
     if not access_token:
         return HUBSPOT_AUTH_ERROR
     api_client = hubspot.Client.create(access_token=access_token)
-    meeting_link_related_info = {
+    meeting_info = {
         'busy_time_slots': [],
         'busy_time_slots_unix': []
     }
@@ -81,7 +81,7 @@ def check_available(owner_id: str, time_zone: str, meeting_date: str, **kwargs) 
         else:
             meeting_links = meeting_link_response['results'][0]
         meeting_slug = meeting_links['slug']
-        meeting_link_related_info['slug'] = meeting_slug
+        meeting_info['slug'] = meeting_slug
         try:
             availability_response = api_client.api_request(
                 {
@@ -105,15 +105,15 @@ def check_available(owner_id: str, time_zone: str, meeting_date: str, **kwargs) 
                 end_time = datetime.fromtimestamp(busy_time["end"] / 1000)
 
                 if start_time.date() == meeting_date.date():
-                    meeting_link_related_info['busy_time_slots'].append({
+                    meeting_info['busy_time_slots'].append({
                         "start": start_time.isoformat(),
                         "end": end_time.isoformat()
                     })
-                    meeting_link_related_info['busy_time_slots_unix'].append({
+                    meeting_info['busy_time_slots_unix'].append({
                         "start": busy_time["start"],
                         "end": busy_time["end"]
                     })
-            return str(meeting_link_related_info)
+            return str(meeting_info)
         except ApiException as e:
             logger.info("Exception when extracting booking information of someone: %s\n" % e)
     except ApiException as e:
