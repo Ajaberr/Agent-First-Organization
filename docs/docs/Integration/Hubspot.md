@@ -175,19 +175,19 @@ After associating, the `'lastmodifieddate'` and `'updated_at'` of contact will b
 When users need technical support/repair service/exchange service, the function will be called. This function is used to create the ticket only for existing customers after calling `find_contact_by_email` function.
 
 Inputs:
-* `contact_information`: `id`, `email`, `first_name` and `last_name` of the contact of the existing customer returned from `find_contact_by_email`
+* `cus_cid`: `id` of the contact of the existing customer returned from `find_contact_by_email`
 * `issue`: the issue that the customer has for the product
 * `**kwargs`: contains the **access token** for the hubspot private app
 
 Output:
-* `ticket_information`: The basic ticket information for the existing customer and the specific issue (ticket_id)
+* `ticket_id`: `id` of ticket for the existing customer
 
 There are several steps for the implementation of this function:
 * Create a **ticket** for the existing customer:
   
   ```python
   timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")[:-3] + "Z"
-  subject_name = "Issue of " + contact_id + " at " + timestamp
+  subject_name = "Issue of " + cus_cid + " at " + timestamp
   ticket_properties = {
         'hs_pipeline_stage': 1,
         'content': issue,
@@ -243,9 +243,6 @@ There are several steps for the implementation of this function:
         association_type_id=15
         )
   ]
-  ticket_information = {
-    'id': ticket_id
-  }
   try:
     association_creation_response = api_client.crm.associations.v4.basic_api.create(
         object_type="contact",
@@ -261,7 +258,7 @@ There are several steps for the implementation of this function:
 The function finds the owner_id of the customer based on the existing contact.
 
 Inputs:
-* `customer_contact_information`: It contains id, email, first_name and last_name of the customer. 
+* `cus_cid`: `id` of the contact of the existing customer returned from `find_contact_by_email`
 * `**kwargs`: contains the **access token** for the hubspot private app
 
 Output:
@@ -271,7 +268,7 @@ Get the `owner_id` from the properties of the contact:
 ```python
 get_owner_id_response = api_client.api_request(
             {
-                "path": "/crm/v3/objects/contacts/{}".format(customer_id),
+                "path": "/crm/v3/objects/contacts/{}".format(cus_cid),
                 "method": "GET",
                 "headers": {
                     'Content-Type': 'application/json'
