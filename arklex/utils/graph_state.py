@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, Any, Optional, Union, List
+from typing import TypedDict, Any, Annotated, Optional, Union, List
 import janus
 from pydantic import BaseModel
 from enum import Enum
@@ -78,3 +78,35 @@ class MessageState(TypedDict):
     # stream
     is_stream: bool
     message_queue: janus.SyncQueue
+
+
+class Timing(TypedDict):
+    taskgraph: Optional[float]
+
+class Metadata(TypedDict):
+    chat_id: str
+    turn_id: int
+    hitl: Optional[str]
+class Taskgraph(TypedDict):
+    dialog_states: dict[str, Any]
+    path: list
+    curr_node: Optional[str]
+    curr_pred_intent: Optional[str]
+    node_limit: dict[str, int]
+    nlu_records: list
+    node_status: dict[str, StatusEnum]
+
+class Memory(TypedDict):
+    history: list[dict[str, Any]]
+    tool_response: dict
+
+class Params(TypedDict):
+    timing: Timing
+    metadata: Metadata
+    taskgraph: Taskgraph
+    memory: Memory
+
+class NodeInfo(TypedDict):
+    resource_id: str
+    resource_name: str
+    attributes: dict[str, Any]

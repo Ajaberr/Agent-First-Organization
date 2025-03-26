@@ -1,0 +1,251 @@
+import json
+import time
+from typing import Any, Dict
+import logging
+import uuid
+import os
+from typing import List, Dict, Any, Tuple
+import ast
+import copy
+from arklex.env.env import Env
+import janus
+from dotenv import load_dotenv
+from difflib import SequenceMatcher
+
+from langchain_core.runnables import RunnableLambda
+import langsmith as ls
+from openai import OpenAI
+from langchain_openai import ChatOpenAI
+
+
+from arklex.orchestrator.task_graph_new import TaskGraph
+from arklex.env.tools.utils import ToolGenerator
+from arklex.orchestrator.NLU.nlu import SlotFilling
+from arklex.orchestrator.prompts import RESPOND_ACTION_NAME, RESPOND_ACTION_FIELD_NAME, REACT_INSTRUCTION
+from arklex.types import EventType, StreamType
+from arklex.utils.graph_state import (ConvoMessage, NodeInfo,
+                                      OrchestratorMessage,
+                                      MessageState,
+                                      StatusEnum,
+                                      BotConfig,
+                                      Slot,
+                                      Timing,
+                                      Metadata,
+                                      Taskgraph,
+                                      Memory,
+                                      Params)
+from arklex.utils.utils import init_logger, truncate_string, format_chat_history, format_truncated_chat_history
+from arklex.orchestrator.NLU.nlu import NLU
+from arklex.utils.trace import TraceRunName
+from arklex.utils.model_config import MODEL
+from arklex.utils.model_provider_config import PROVIDER_MAP
+from arklex.env.planner.function_calling import aimessage_to_dict
+
+
+load_dotenv()
+logger = logging.getLogger(__name__)
+
+class AgentOrg:
+    def __init__(self, config, env: Env, **kwargs):
+        if isinstance(config, dict):
+            self.product_kwargs = config
+        else:
+            self.product_kwargs = json.load(open(config))
+        self.user_prefix = "user"
+        self.worker_prefix = "assistant"
+        self.environment_prefix = "tool"
+        self.__eos_token = "\n"
+        self.task_graph = TaskGraph("taskgraph", self.product_kwargs)
+        self.env = env
+
+    
+    def init_params(self, inputs) -> Tuple[str, str, Params]:
+        text = inputs["text"]
+        chat_history = inputs["chat_history"]
+        params = inputs["parameters"]
+
+        timing = Timing(
+            taskgraph=params.get("timing", {}).get("taskgraph", None)
+        )
+        metadata = Metadata(
+            chat_id=params.get("metadata", {}).get("chat_id", str(uuid.uuid4())),
+            turn_id=params.get("metadata", {}).get("turn_id", 0),
+            hitl=params.get("metadata", {}).get("hitl", None),
+        )
+        taskgraph = Taskgraph(
+            dialog_states=params.get("taskgraph", {}).get("dialog_states", {}),
+            path=params.get("taskgraph", {}).get("path", []),
+            curr_node=params.get("taskgraph", {}).get("curr_node", None),
+            curr_pred_intent=params.get("taskgraph", {}).get("curr_pred_intent", None),
+            node_limit=params.get("taskgraph", {}).get("node_limit", {}),
+            nlu_records=params.get("taskgraph", {}).get("nlu_records", []),
+            node_status=params.get("taskgraph", {}).get("node_status", {}),
+        )
+        memory = Memory(
+            history=params.get("memory", {}).get("history", []),
+            tool_response=params.get("memory", {}).get("tool_response", {}),
+        )
+        params = Params(
+            timing=timing,
+            metadata=metadata,
+            taskgraph=taskgraph,
+            memory=memory
+        )
+
+        chat_history_copy = copy.deepcopy(chat_history)
+        chat_history_copy.append({"role": self.user_prefix, "content": text})
+        chat_history_str = format_chat_history(chat_history_copy)
+        if params["taskgraph"]["dialog_states"]:
+            params["taskgraph"]["dialog_states"] = {tool: [Slot(**slot_data) for slot_data in slots]
+                                                    for tool, slots in params["taskgraph"]["dialog_states"].items()}
+        else:
+            params["taskgraph"]["dialog_states"] = {}
+        params["metadata"]["turn_id"] += 1
+        params["metadata"]["tool_response"] = {}
+        if not params["memory"]["history"]:
+            params["memory"]["history"] = copy.deepcopy(chat_history_copy)
+        else:
+            params["memory"]["history"].append(chat_history_copy[-2])
+            params["memory"]["history"].append(chat_history_copy[-1])
+        return text, chat_history_str, params
+
+    def check_skip_node(self, node_info: NodeInfo, params: Params):
+        cur_node_id = params["taskgraph"]["curr_node"]
+        if params["taskgraph"]["node_limit"][cur_node_id] <= 0:
+            return True
+        params["taskgraph"]["node_limit"][cur_node_id] -= 1
+        return False
+
+    def update_path(self, node_info: NodeInfo, params: Params, update_info=None):
+        '''
+        update_info is a dict of
+            skipped = Optional[bool]
+        '''
+        node = {
+            "node_id": params["taskgraph"]["curr_node"],
+        }
+        if update_info and "skipped" in update_info and update_info["skipped"]:
+            node["skipped"] = True
+        params["taskgraph"]['path'].append(node)
+        return params
+    
+    def handl_direct_node(self, node_info: NodeInfo, params: Params):
+        # Direct response
+        node_attribute = node_info["attribute"]
+        if node_attribute.get("value", "").strip() and node_attribute.get("direct"):
+            return_response = {
+                "answer": node_attribute["value"],
+                "parameters": params
+            }
+            # Change the dialog_states from Class object to dict
+            if params["taskgraph"].get("dialog_states"):
+                params["taskgraph"]["dialog_states"] = {
+                    tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
+                
+            if node_attribute.get("type", "") == "multiple-choice" and node_attribute.get("choice_list", []):
+                return_response["choice_list"] = node_attribute["choice_list"]
+            return True, return_response, params
+        return False, None, None
+    
+    def perform_node(self, node_info: NodeInfo, params: Params, text: str, chat_history_str: str, stream_type: StreamType, message_queue: janus.SyncQueue):
+        
+        # Tool/Worker
+        user_message = ConvoMessage(history=chat_history_str, message=text)
+        orchestrator_message = OrchestratorMessage(message=node_info["attribute"]["value"], attribute=node_info["attribute"])
+        sys_instruct = "You are a " + self.product_kwargs["role"] + ". " + \
+                            self.product_kwargs["user_objective"] + \
+                            self.product_kwargs["builder_objective"] + \
+                            self.product_kwargs["intro"] + \
+                            self.product_kwargs.get("opt_instruct", "")
+        bot_config = BotConfig(
+            bot_id=self.product_kwargs.get("bot_id", "default"),
+            version=self.product_kwargs.get("version", "default"),
+            language=self.product_kwargs.get("language", "EN"),
+            bot_type=self.product_kwargs.get("bot_type", "presalebot"),
+        )
+        message_state = MessageState(
+            sys_instruct=sys_instruct, 
+            bot_config=bot_config,
+            user_message=user_message, 
+            orchestrator_message=orchestrator_message, 
+            trajectory=params["memory"]["history"], 
+            message_flow=params.get("worker_response", {}).get("message_flow", ""), 
+            slots=params["taskgraph"]["dialog_states"],
+            metadata=params["metadata"],
+            is_stream=True if stream_type is not None else False,
+            message_queue=message_queue
+        )
+        
+        response_state, params = self.env.step(node_info["resource_id"], message_state, params)
+        return response_state, params
+    
+    def get_response(self, inputs: dict, stream_type: StreamType = None, message_queue: janus.SyncQueue = None) -> Dict[str, Any]:
+        text, chat_history_str, params = self.init_params(inputs)
+        ##### TaskGraph Chain
+        taskgraph_inputs = {
+            "text": text,
+            "chat_history_str": chat_history_str,
+            "parameters": params  ## TODO: different params for different components
+        }
+
+        counter_message_worker = 0
+        # TODO: when default worker is removed, remove also this.
+        counter_default_worker = 0
+        taskgraph_chain = RunnableLambda(self.task_graph.get_node) | RunnableLambda(self.task_graph.postprocess_node)
+
+        while True:
+            node_info, params = taskgraph_chain.invoke(taskgraph_inputs)
+            # Check if current node can be skipped
+            can_skip = self.check_skip_node(node_info, params)
+            if can_skip:
+                params = self.update_path(node_info, params, {"skipped": True})
+                continue
+            logger.info(f"The current node info is : {node_info}")
+            # Check current node attributes
+            if node_info["resource_id"] == self.env.name2id["DefaultWorker"]:
+                counter_message_worker += 1
+            elif node_info["resource_id"] == self.env.name2id["MessageWorker"]:
+                counter_default_worker += 1
+            # handle direct node
+            is_direct_node, direct_response, params = self.handl_direct_node(node_info, params)
+            if is_direct_node:
+                params = self.update_path(node_info, params)
+                return direct_response
+            # perform node
+            response_state, params = self.perform_node(node_info,
+                                                       params,
+                                                       text,
+                                                       chat_history_str,
+                                                       stream_type,
+                                                       message_queue)
+            params = self.update_path(node_info, params)
+
+            # If the current node is not complete, then no need to continue to the next node
+            node_status = params["taskgraph"]["node_status"]
+            cur_node_id = params["taskgraph"]["curr_node"]
+            status = node_status.get(cur_node_id, StatusEnum.COMPLETE.value)
+            if status == StatusEnum.INCOMPLETE.value:
+                break
+            # If the counter of message worker or counter of default worker == 1, break the loop
+            if counter_message_worker == 1 or counter_default_worker == 1:
+                break
+
+        if not response_state.get("response", ""):
+            logger.info("No response, do context generation")
+            tool_response = {}
+            if stream_type is None:
+                response_state = ToolGenerator.context_generate(response_state)
+            else:
+                response_state = ToolGenerator.stream_context_generate(response_state)
+        
+        response = response_state.get("response", "")
+        params["memory"]["tool_response"] = {}
+        if params["taskgraph"].get("dialog_states"):
+                params["taskgraph"]["dialog_states"] = {tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
+        params["tool_response"] = tool_response
+        return {
+            "answer": response,
+            "parameters": params,
+            "human-in-the-loop": params['metadata'].get('hitl', None),
+        }
+        
