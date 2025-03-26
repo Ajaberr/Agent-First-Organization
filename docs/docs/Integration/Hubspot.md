@@ -301,7 +301,7 @@ To achieve the goal of the function, several steps are implemented:
 `MEETING_LINK_UNFOUND_ERROR` will be returned.
 
 ```python
-meeting_link_response = api_client.api_request(
+        meeting_link_response = api_client.api_request(
             {
                 "path": "/scheduler/v3/meetings/meeting-links",
                 "method": "GET",
@@ -352,15 +352,18 @@ The unavailable time slots will not be shown on the meeting scheduler on hubspot
 
 ![hubspot_meeting_2.png](../../static/img/hubspot/hubspot_meeting_2.png)
 
-### create_meeting(customer_contact_information, meeting_date, meeting_start_time, duration, meeting_link_related_info, time_zone, **kwargs):
+### def create_meeting(cus_fname, cus_lname, cus_email, meeting_date, meeting_start_time, duration, slug, bt_slots_ux, time_zone, **kwargs):
 This function will help the customer to schedule a meeting
 
 Inputs:
-* `customer_contact_information`: It contains id, email, first_name and last_name of the customer. 
+* `cus_fname`: the first name of the customer. 
+* `cus_lname`: the last name of the customer. 
+* `cus_email`: the email address of the customer
 * `meeting_date`: the date when customer want to schedule a meeting
 * `meeting_start_time`: the exact time the customer wish to begin
 * `duration`: the duration of the meeting (e.g. 15, 30, 60 minutes)
-* `meeting_link_related_info`: the unavailable time slots of the owner
+* `slug`: the slug of the meeting link
+* `bt_slots_ux`: the unavailable time slots of the representative (unix form)
 * `time_zone`: the timezone of the customer's location
 * `**kwargs`: contains the **access token** for the hubspot private app
 
@@ -379,12 +382,10 @@ If the `start_time` and `end_time` of the meeting are in the unavailable slots, 
     duration = int(duration)
     duration = int(timedelta(minutes=duration).total_seconds() * 1000)
 
-    meeting_link_related_info = ast.literal_eval(meeting_link_related_info)
-    meeting_slug = meeting_link_related_info.get('slug')
-    unavailable_time_slots = meeting_link_related_info.get('busy_time_slots_unix')
-
     meeting_end_time = meeting_start_time + duration
-    for time_slot in unavailable_time_slots:
+
+    bt_slots_ux = json.loads(bt_slots_ux)
+    for time_slot in bt_slots_ux:
         if meeting_start_time >= time_slot['start'] and meeting_start_time < time_slot['end']:
             return UNAVAILABLE_ERROR
         elif meeting_end_time >= time_slot['start'] and meeting_end_time <= time_slot['end']:
@@ -400,12 +401,12 @@ If the `start_time` and `end_time` of the meeting are in the unavailable slots, 
                 "path": "/scheduler/v3/meetings/meeting-links/book",
                 "method": "POST",
                 "body": {
-                    "slug": meeting_slug,
+                    "slug": slug,
                     "duration": duration,
                     "startTime": meeting_start_time,
-                    "email": customer_email,
-                    "firstName": customer_first_name,
-                    "lastName": customer_last_name,
+                    "email": cus_email,
+                    "firstName": cus_fname,
+                    "lastName": cus_lname,
                     "timezone": time_zone,
                     "locale": "en-us",
                 },
