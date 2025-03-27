@@ -14,7 +14,7 @@ slots = [
     {
         "name": "owner_id",
         "type": "string",
-        "description": "The owner id of the owner, extracting from the tool \'find_owner_id_by_contact_id\'",
+        "description": "The owner id of the owner.'",
         "prompt": "",
         "required": True,
     },
@@ -116,8 +116,10 @@ def check_available(owner_id: str, time_zone: str, meeting_date: str, **kwargs) 
             return str(meeting_info)
         except ApiException as e:
             logger.info("Exception when extracting booking information of someone: %s\n" % e)
+            return MEETING_LINK_UNFOUND_ERROR
     except ApiException as e:
         logger.info("Exception when extracting meeting scheduler links: %s\n" % e)
+        return MEETING_LINK_UNFOUND_ERROR
 
 
 

@@ -26,6 +26,7 @@ outputs = [
     }
 ]
 
+OWNER_UNFOUND_ERROR = 'error: owner not found (not an existing customer)'
 errors = [
     HUBSPOT_AUTH_ERROR
 ]
@@ -60,3 +61,4 @@ def find_owner_id_by_contact_id(cus_cid, **kwargs) -> str:
         return owner_id
     except ApiException as e:
         logger.info("Exception when extracting owner_id of one contact: %s\n" % e)
+        return OWNER_UNFOUND_ERROR

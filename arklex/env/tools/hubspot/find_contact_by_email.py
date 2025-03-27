@@ -113,6 +113,7 @@ def find_contact_by_email(email: str, chat: str, **kwargs) -> str:
             return USER_NOT_FOUND_ERROR
     except ApiException as e:
         logger.info("Exception when calling search_api: %s\n" % e)
+        return USER_NOT_FOUND_ERROR
 
 
 

@@ -148,6 +148,7 @@ def create_meeting(cus_fname: str, cus_lname: str, cus_email: str, meeting_date:
         return json.dumps(create_meeting_response)
     except ApiException as e:
         logger.info("Exception when scheduling a meeting: %s\n" % e)
+        return UNAVAILABLE_ERROR
 
 
 def parse_natural_date(date_str, base_date=None, timezone=None, date_input=False):

@@ -38,8 +38,10 @@ outputs = [
 ]
 
 USER_NOT_FOUND_ERROR = "error: user not found (not an existing customer)"
+TICKET_CREATION_ERROR = "error: ticket creation failed"
 errors = [
-    HUBSPOT_AUTH_ERROR
+    HUBSPOT_AUTH_ERROR,
+    TICKET_CREATION_ERROR
 ]
 
 
@@ -80,8 +82,10 @@ def create_ticket(cus_cid: str, issue: str, **kwargs) -> str:
             return ticket_id
         except ApiException as e:
             logger.info("Exception when calling AssociationV4: %s\n" % e)
+            return TICKET_CREATION_ERROR
     except ApiException as e:
         logger.info("Exception when calling Crm.tickets.create: %s\n" % e)
+        return TICKET_CREATION_ERROR
 
 
 
