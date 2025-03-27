@@ -35,19 +35,19 @@
       "2",
       {
         "resource": {
-          "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
-          "name": "create_ticket"
+          "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
+          "name": "FaissRAGWorker"
         },
         "attribute": {
           "value": "",
-          "task": "create the ticket for the existing customer",
+          "task": "Retrieve information from the documentations to answer customer question",
           "directed": false
         },
         "limit": 1
       }
     ],
     [
-      "4",
+      "3",
       {
         "resource": {
           "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
@@ -62,15 +62,75 @@
       }
     ],
     [
-      "3",
+      "4",
       {
         "resource": {
-          "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
-          "name": "FaissRAGWorker"
+          "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
+          "name": "create_ticket"
         },
         "attribute": {
           "value": "",
-          "task": "Retrieve information from the documentations to answer customer question",
+          "task": "create the ticket for the existing customer",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "5",
+      {
+        "resource": {
+          "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
+          "name": "search_customer"
+        },
+        "attribute": {
+          "value": "",
+          "task": "Detect whether this is the existing customer from our hubspot platform",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "6",
+      {
+        "resource": {
+          "id": "11860b97-dfcf-4f1d-9e44-8767c50fd371",
+          "name": "find_owner_id_by_contact_id"
+        },
+        "attribute": {
+          "value": "",
+          "task": "find the owner id of the contact",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "7",
+      {
+        "resource": {
+          "id": "8a6784c2-a130-4eb4-9924-4f4c58f4bf9d",
+          "name": "check_available"
+        },
+        "attribute": {
+          "value": "",
+          "task": "Show customer the busy time the representative has",
+          "directed": false
+        },
+        "limit": 1
+      }
+    ],
+    [
+      "8",
+      {
+        "resource": {
+          "id": "e86daf21-41a3-40b2-9695-3ed59be46cc4",
+          "name": "create_meeting"
+        },
+        "attribute": {
+          "value": "",
+          "task": "schedule a meeting for the customer to the specific representative",
           "directed": false
         },
         "limit": 1
@@ -92,20 +152,7 @@
       }
     ],
     [
-      "0",
-      "4",
-      {
-        "intent": "User need technical support/User need repair service / User need exchange service",
-        "attribute": {
-          "weight": 1,
-          "pred": true,
-          "definition": "",
-          "sample_utterances": []
-        }
-      }
-    ],
-    [
-      "4",
+      "1",
       "2",
       {
         "intent": "none",
@@ -118,8 +165,73 @@
       }
     ],
     [
-      "1",
+      "0",
       "3",
+      {
+        "intent": "User need technical support/User need repair service / User need exchange service",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "3",
+      "4",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "0",
+      "5",
+      {
+        "intent": "User want to schedule a meeting with the representative",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "5",
+      "6",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "6",
+      "7",
+      {
+        "intent": "none",
+        "attribute": {
+          "weight": 1,
+          "pred": true,
+          "definition": "",
+          "sample_utterances": []
+        }
+      }
+    ],
+    [
+      "7",
+      "8",
       {
         "intent": "none",
         "attribute": {
@@ -146,13 +258,37 @@
       "id": "ddbe6adc-cd0e-40bc-8a95-91cb69ed807b",
       "name": "find_contact_by_email",
       "path": "hubspot.find_contact_by_email",
-      "fixed_args": { "access_token": "<access-token>" }
+      "fixed_args": { "access_token": "<access_token>" }
     },
     {
       "id": "aa8dd20d-fda7-475b-91ce-8c5fc356a2b7",
       "name": "create_ticket",
       "path": "hubspot.create_ticket",
-      "fixed_args": { "access_token": "<access-token>" }
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "8a6784c2-a130-4eb4-9924-4f4c58f4bf9d",
+      "name": "check_available",
+      "path": "hubspot.check_available",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "e86daf21-41a3-40b2-9695-3ed59be46cc4",
+      "name": "create_meeting",
+      "path": "hubspot.create_meeting",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "1437160f-6036-4fc9-99db-0e45afabd03c",
+      "name": "find_owner_by_owner_id",
+      "path": "hubspot.find_owner_by_owner_id",
+      "fixed_args": { "access_token": "<access_token>" }
+    },
+    {
+      "id": "11860b97-dfcf-4f1d-9e44-8767c50fd371",
+      "name": "find_owner_id_by_contact_id",
+      "path": "hubspot.find_owner_id_by_contact_id",
+      "fixed_args": { "access_token": "<access_token>" }
     }
   ],
   "workers": [
@@ -165,6 +301,11 @@
       "id": "40f05456-525c-4d9d-ac37-54482d6b220b",
       "name": "FaissRAGWorker",
       "path": "faiss_rag_worker.py"
+    },
+    {
+      "id": "b10555ac-0930-42c0-9016-6605f956e411",
+      "name": "DefaultWorker",
+      "path": "default_worker.py"
     }
   ],
   "nluapi": "",
