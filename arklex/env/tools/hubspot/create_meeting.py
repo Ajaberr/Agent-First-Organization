@@ -1,3 +1,4 @@
+import ast
 import json
 from datetime import datetime, timedelta
 import pytz
@@ -17,21 +18,21 @@ slots = [
     {
         "name": "cus_fname",
         "type": "string",
-        "description": "The first name of the customer contact. Typically it is returned from find_contact_by_email.",
+        "description": "The first name of the customer contact.",
         "prompt": "",
         "required": True,
     },
     {
         "name": "cus_lname",
         "type": "string",
-        "description": "The first name of the customer contact. Typically it is returned from find_contact_by_email.",
+        "description": "The last name of the customer contact.",
         "prompt": "",
         "required": True,
     },
     {
         "name": "cus_email",
         "type": "string",
-        "description": "The email of the customer contact. It is the user input of find_contact_by_email.",
+        "description": "The email of the customer contact.",
         "prompt": "",
         "required": True,
     },

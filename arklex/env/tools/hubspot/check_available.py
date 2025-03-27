@@ -22,7 +22,7 @@ slots = [
         "name": "time_zone",
         "type": "string",
         "enum": ["America/New_York", "America/Los_Angeles", "Asia/Tokyo", "Europe/London"],
-        "description": "The timezone of the user. For example, 'America/New_York'.",
+        "description": "The timezone of the user. For example, 'America/New_York'. If you are not sure, just ask the user to confirm.",
         "prompt": "Could you please provide your timezone or where are you now?",
         "required": True
     },

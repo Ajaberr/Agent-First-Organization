@@ -1,3 +1,4 @@
+import ast
 from datetime import datetime
 
 import hubspot
@@ -16,7 +17,7 @@ slots = [
     {
         "name": "cus_cid",
         "type": "string",
-        "description": "The id of the customer contact. Typically it is returned from find_contact_by_email.",
+        "description": "The id of the customer contact.",
         "prompt": "",
         "required": True,
     },
