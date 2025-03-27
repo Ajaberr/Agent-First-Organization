@@ -81,25 +81,25 @@ The structure of a contact is demonstrated inside the `results` field.
 * Then a **communication** object will be created, whose content is `chat`:
   
   ```python
-  if contact_search_response['total'] == 1:
-    contact_id = contact_search_response['results'][0]['id']
-    communication_data = SimplePublicObjectInputForCreate(
-        properties = {
-            "hs_communication_channel_type": "CUSTOM_CHANNEL_CONVERSATION",
-            "hs_communication_body": chat,
-            "hs_communication_logged_from": "CRM",
-            "hs_timestamp": datetime.now(timezone.utc).isoformat(),
+        if contact_search_response['total'] == 1:
+            contact_id = contact_search_response['results'][0]['id']
+            communication_data = SimplePublicObjectInputForCreate(
+                properties = {
+                    "hs_communication_channel_type": "CUSTOM_CHANNEL_CONVERSATION",
+                    "hs_communication_body": chat,
+                    "hs_communication_logged_from": "CRM",
+                    "hs_timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+            contact_info_properties = {
+                'contact_id': contact_id,
+                'contact_email': email,
+                'contact_first_name': contact_search_response['results'][0]['properties'].get('firstname'),
+                'contact_last_name': contact_search_response['results'][0]['properties'].get('lastname')
             }
-    )
-    contact_info_properties = {
-        'id': contact_id,
-        'email': email,
-        'first_name': contact_search_response['results'][0]['properties'].get('firstname'),
-        'last_name': contact_search_response['results'][0]['properties'].get('lastname')
-    }
-    try:
-        communication_creation_response = api_client.crm.objects.communications.basic_api.create(communication_data)
-        communication_creation_response = communication_creation_response.to_dict()
+            try:
+                communication_creation_response = api_client.crm.objects.communications.basic_api.create(communication_data)
+                communication_creation_response = communication_creation_response.to_dict()
   ```
   
   The structure of the **communication** object is shown below:
@@ -143,18 +143,18 @@ After associating, the `'lastmodifieddate'` and `'updated_at'` of contact will b
   ```python
   communication_id = communication_creation_response['id']
   association_spec = [
-    AssociationSpec(
-        association_category="HUBSPOT_DEFINED",
-        association_type_id=82
-    )
+        AssociationSpec(
+                association_category="HUBSPOT_DEFINED",
+                association_type_id=82
+            )
   ]
   try:
     association_creation_response = api_client.crm.associations.v4.basic_api.create(
-        object_type="contact",
-        object_id=contact_id,
-        to_object_type="communication",
-        to_object_id=communication_id,
-        association_spec=association_spec
+            object_type="contact",
+            object_id=contact_id,
+            to_object_type="communication",
+            to_object_id=communication_id,
+            association_spec=association_spec
     )
   ```
   
@@ -186,17 +186,17 @@ There are several steps for the implementation of this function:
 * Create a **ticket** for the existing customer:
   
   ```python
-  timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")[:-3] + "Z"
-  subject_name = "Issue of " + cus_cid + " at " + timestamp
-  ticket_properties = {
+    timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")[:-3] + "Z"
+    subject_name = "Issue of " + cus_cid + " at " + timestamp
+    ticket_properties = {
         'hs_pipeline_stage': 1,
         'content': issue,
         'subject': subject_name
     }
-  ticket_for_create = SimplePublicObjectInputForCreate(properties=ticket_properties)
-  try:
-    ticket_creation_response = api_client.crm.tickets.basic_api.create(simple_public_object_input_for_create=ticket_for_create)
-    ticket_creation_response = ticket_creation_response.to_dict()
+    ticket_for_create = SimplePublicObjectInputForCreate(properties=ticket_properties)
+    try:
+        ticket_creation_response = api_client.crm.tickets.basic_api.create(simple_public_object_input_for_create=ticket_for_create)
+        ticket_creation_response = ticket_creation_response.to_dict()
   ```
 
   The structure of the created **ticket** is like:
@@ -239,14 +239,14 @@ There are several steps for the implementation of this function:
   ticket_id = ticket_creation_response['id']
   association_spec = [
     AssociationSpec(
-        association_category="HUBSPOT_DEFINED",
-        association_type_id=15
+                association_category="HUBSPOT_DEFINED",
+                association_type_id=15
         )
   ]
   try:
     association_creation_response = api_client.crm.associations.v4.basic_api.create(
         object_type="contact",
-        object_id=contact_id,
+        object_id=cus_cid,
         to_object_type="ticket",
         to_object_id=ticket_id,
         association_spec=association_spec
@@ -254,7 +254,7 @@ There are several steps for the implementation of this function:
   ```
 
 
-### find_owner_id_by_contact_id(customer_contact_information, **kwargs):
+### find_owner_id_by_contact_id(cus_cid, **kwargs):
 The function finds the owner_id of the customer based on the existing contact.
 
 Inputs:
@@ -266,7 +266,7 @@ Output:
 
 Get the `owner_id` from the properties of the contact:
 ```python
-get_owner_id_response = api_client.api_request(
+    get_owner_id_response = api_client.api_request(
             {
                 "path": "/crm/v3/objects/contacts/{}".format(cus_cid),
                 "method": "GET",
@@ -279,6 +279,7 @@ get_owner_id_response = api_client.api_request(
             }
 
         )
+    get_owner_id_response = get_owner_id_response.json()
 ```
 
 
@@ -328,7 +329,6 @@ The meeting scheduler link on hubspot is like below:
 * After getting the meeting link of the owner, `slug` is used to get the unavailable time slots of the owner:
 
 ```python
-        try:
             availability_response = api_client.api_request(
                 {
                     "path": "/scheduler/v3/meetings/meeting-links/book/{}".format(meeting_slug),
@@ -352,7 +352,7 @@ The unavailable time slots will not be shown on the meeting scheduler on hubspot
 
 ![hubspot_meeting_2.png](../../static/img/hubspot/hubspot_meeting_2.png)
 
-### def create_meeting(cus_fname, cus_lname, cus_email, meeting_date, meeting_start_time, duration, slug, bt_slots_ux, time_zone, **kwargs):
+### create_meeting(cus_fname, cus_lname, cus_email, meeting_date, meeting_start_time, duration, slug, bt_slots_ux, time_zone, **kwargs):
 This function will help the customer to schedule a meeting
 
 Inputs:
