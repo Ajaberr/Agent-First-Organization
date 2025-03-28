@@ -124,7 +124,7 @@
 }
 
 .contentSection {
-  padding: 8rem 2rem;
+  padding: 4rem 2rem;
   background: linear-gradient(to bottom, #fafafa, #ffffff);
   position: relative;
   overflow: hidden;
@@ -156,7 +156,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 4rem;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: 6rem;
 }
 
 .imageWrapper {
