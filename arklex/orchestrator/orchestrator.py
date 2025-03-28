@@ -55,15 +55,9 @@ class AgentOrg:
                     model=MODEL["model_type_or_path"],
                     temperature = 0.0,
                 )
-        if MODEL['llm_provider'] == 'gemini':
-            messages = [
-                ("system",str(messages[0]['content']),),
-                ("human", ""),
-            ]
-        elif MODEL['llm_provider'] == 'anthropic':
-            messages = [
-            ("human",str(messages[0]['content']),),
-        ]
+        if MODEL['llm_provider'] != 'openai':
+            messages[0]['role'] = 'user'
+       
         res = llm.invoke(messages)        
         message = aimessage_to_dict(res)
         action_str = message['content'].split("Action:")[-1].strip()
