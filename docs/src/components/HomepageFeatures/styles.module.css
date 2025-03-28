@@ -9,7 +9,6 @@
 .features {
   position: relative;
   width: 100%;
-  min-height: 80vh;
   margin-top: -2.5rem;
   overflow: visible;
   padding: 1rem;
@@ -17,7 +16,7 @@
 
 .sectionTitle {
   text-align: center;
-  margin-bottom: 3.4rem;
+  margin: 3.4rem 0;
   position: relative;
   z-index: 2;
 }
@@ -47,6 +46,7 @@
   grid-template-rows: repeat(2, 1fr);
   gap: 3rem;
   padding: 1rem 0;
+  margin: 0 auto;
 }
 
 @keyframes rotate {
@@ -299,22 +299,70 @@
 }
 
 @media (min-width: 1526px) {
-  .features {
-    min-height: 50vh;
+  .gridContainer {
+    gap: 4rem;
+  }
+
+  .featureCard {
+    max-width: 700px;
+    padding-bottom: 3rem;
+  }
+
+  .svgWrapper {
+    width: 180px;
+    height: 140px;
+  }
+
+  .featureSvg {
+    width: 140px;
+    height: 140px;
+  }
+
+  .textContent h3 {
+    font-size: 1.4rem;
+  }
+
+  .textContent p {
+    font-size: 1.1rem;
   }
 }
 
 @media (min-width: 1200px) and (max-width: 1525px) {
-  .features {
-    min-height: 60vh;
+  .gridContainer {
+    max-width: 1500px;
+    gap: 3.5rem;
+  }
+
+  .featureCard {
+    max-width: 570px;
+  }
+
+  .svgWrapper {
+    width: 165px;
+    height: 130px;
+  }
+
+  .featureSvg {
+    width: 130px;
+    height: 130px;
+  }
+
+  .textContent h3 {
+    font-size: 1.3rem;
+  }
+
+  .textContent p {
+    font-size: 1.05rem;
   }
 }
 
 @media (max-width: 996px) {
   .features {
-    height: auto;
-    min-height: auto;
     padding: 1rem 1rem 4rem;
+  }
+
+  .sectionTitle {
+    margin-top: 0;
   }
 
   .gridContainer {
