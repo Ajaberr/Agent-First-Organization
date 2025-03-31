@@ -83,18 +83,28 @@ class MessageState(TypedDict):
 class Timing(TypedDict):
     taskgraph: Optional[float]
 
+class PathNode(TypedDict):
+    node_id: str
+    is_skipped: bool
+    in_flow_stack: bool
+    nested_graph_node_value: Optional[str]
+    nested_graph_leaf_jump: Optional[str]
+
+
 class Metadata(TypedDict):
     chat_id: str
     turn_id: int
     hitl: Optional[str]
+
 class Taskgraph(TypedDict):
     dialog_states: dict[str, Any]
-    path: list
+    path: list[PathNode]
     curr_node: Optional[str]
     curr_pred_intent: Optional[str]
     node_limit: dict[str, int]
     nlu_records: list
     node_status: dict[str, StatusEnum]
+    available_global_intents: list
 
 class Memory(TypedDict):
     history: list[dict[str, Any]]
@@ -110,3 +120,4 @@ class NodeInfo(TypedDict):
     resource_id: str
     resource_name: str
     attributes: dict[str, Any]
+    add_flow_stack: Optional[bool] = False

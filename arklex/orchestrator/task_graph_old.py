@@ -1,7 +1,6 @@
 import copy
 import logging
 import collections
-from typing import Tuple
 
 import networkx as nx
 import numpy as np
@@ -10,7 +9,7 @@ from langchain_openai import ChatOpenAI
 
 from arklex.utils.model_provider_config import PROVIDER_MAP
 from arklex.utils.utils import normalize, str_similarity, format_chat_history
-from arklex.utils.graph_state import NodeInfo, Params, StatusEnum
+from arklex.utils.graph_state import StatusEnum
 from arklex.orchestrator.NLU.nlu import NLU, SlotFilling
 from arklex.utils.model_config import MODEL
 
@@ -322,7 +321,6 @@ class TaskGraph(TaskGraphBase):
                                         "pred_intent": pred_intent, "no_intent": False, "global_intent": True})
                     params["nlu_records"] = nlu_records
                     found_pred_in_avil, pred_intent, intent_idx = self._postprocess_intent(pred_intent, available_intents)
-            
             if pred_intent.lower() != self.unsure_intent.get("intent") and found_pred_in_avil:  # found global intent
                 logger.info(f"Global intent changed from {curr_pred_intent} to {pred_intent}")
                 curr_pred_intent = pred_intent
@@ -494,7 +492,7 @@ class TaskGraph(TaskGraphBase):
         
         return node_info, params
 
-    def postprocess_node(self, node) -> Tuple[NodeInfo, Params]:
+    def postprocess_node(self, node):
         node_info = node[0]
         params = node[1]
 

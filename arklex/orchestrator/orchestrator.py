@@ -23,7 +23,17 @@ from arklex.env.tools.utils import ToolGenerator
 from arklex.orchestrator.NLU.nlu import SlotFilling
 from arklex.orchestrator.prompts import RESPOND_ACTION_NAME, RESPOND_ACTION_FIELD_NAME, REACT_INSTRUCTION
 from arklex.types import EventType, StreamType
-from arklex.utils.graph_state import ConvoMessage, OrchestratorMessage, MessageState, StatusEnum, BotConfig, Slot
+from arklex.utils.graph_state import (ConvoMessage, NodeInfo,
+                                      OrchestratorMessage,
+                                      MessageState, PathNode,
+                                      StatusEnum,
+                                      BotConfig,
+                                      Slot,
+                                      Timing,
+                                      Metadata,
+                                      Taskgraph,
+                                      Memory,
+                                      Params)
 from arklex.utils.utils import init_logger, truncate_string, format_chat_history, format_truncated_chat_history
 from arklex.orchestrator.NLU.nlu import NLU
 from arklex.utils.trace import TraceRunName
@@ -48,121 +58,112 @@ class AgentOrg:
         self.task_graph = TaskGraph("taskgraph", self.product_kwargs)
         self.env = env
 
-    def generate_next_step(
-        self, messages: List[Dict[str, Any]], text:str
-    ) -> Tuple[Dict[str, Any], str, float]:
-        llm = PROVIDER_MAP.get(MODEL['llm_provider'], ChatOpenAI)(
-                    model=MODEL["model_type_or_path"],
-                    temperature = 0.0,
-                )
-        if MODEL['llm_provider'] == 'gemini':
-            messages = [
-                ("system",str(messages[0]['content']),),
-                ("human", ""),
-            ]
-        elif MODEL['llm_provider'] == 'anthropic':
-            messages = [
-            ("human",str(messages[0]['content']),),
-        ]
-        res = llm.invoke(messages)        
-        message = aimessage_to_dict(res)
-        action_str = message['content'].split("Action:")[-1].strip()
-        try:
-            action_parsed = json.loads(action_str)
-        except json.JSONDecodeError:
-            # this is a hack
-            logger.warning(f"Failed to parse action: {action_str}, choose respond action")
-            action_parsed = {
-                "name": RESPOND_ACTION_NAME,
-                "arguments": {RESPOND_ACTION_FIELD_NAME: action_str},
-            }
-        if action_parsed.get("name"):
-            action = action_parsed["name"]
-        else:
-            logger.warning(f"Failed to parse action: {action_str}, choose respond action")
-            action = RESPOND_ACTION_NAME
-        # issues with getting response_cost using langchain, set to 0.0 for now
-        return message, action, 0.0
-
-
-    def get_response(self, inputs: dict, stream_type: StreamType = None, message_queue: janus.SyncQueue = None) -> Dict[str, Any]:
+    
+    def init_params(self, inputs) -> Tuple[str, str, Params]:
         text = inputs["text"]
         chat_history = inputs["chat_history"]
         params = inputs["parameters"]
-        params["timing"] = {}
+
+        timing = Timing(
+            taskgraph=params.get("timing", {}).get("taskgraph", None)
+        )
+        metadata = Metadata(
+            chat_id=params.get("metadata", {}).get("chat_id", str(uuid.uuid4())),
+            turn_id=params.get("metadata", {}).get("turn_id", 0),
+            hitl=params.get("metadata", {}).get("hitl", None),
+        )
+        taskgraph = Taskgraph(
+            dialog_states=params.get("taskgraph", {}).get("dialog_states", {}),
+            path=params.get("taskgraph", {}).get("path", []),
+            curr_node=params.get("taskgraph", {}).get("curr_node", None),
+            curr_pred_intent=params.get("taskgraph", {}).get("curr_pred_intent", None),
+            node_limit=params.get("taskgraph", {}).get("node_limit", {}),
+            nlu_records=params.get("taskgraph", {}).get("nlu_records", []),
+            node_status=params.get("taskgraph", {}).get("node_status", {}),
+            available_global_intents=params.get("taskgraph", {}).get("available_global_intents", [])
+        )
+        memory = Memory(
+            history=params.get("memory", {}).get("history", []),
+            tool_response=params.get("memory", {}).get("tool_response", {}),
+        )
+        params = Params(
+            timing=timing,
+            metadata=metadata,
+            taskgraph=taskgraph,
+            memory=memory
+        )
+
         chat_history_copy = copy.deepcopy(chat_history)
         chat_history_copy.append({"role": self.user_prefix, "content": text})
         chat_history_str = format_chat_history(chat_history_copy)
-        dialog_states = params.get("dialog_states", {})
-        if dialog_states:
-            params["dialog_states"] = {tool: [Slot(**slot_data) for slot_data in slots] for tool, slots in dialog_states.items()}
+        if params["taskgraph"]["dialog_states"]:
+            params["taskgraph"]["dialog_states"] = {tool: [Slot(**slot_data) for slot_data in slots]
+                                                    for tool, slots in params["taskgraph"]["dialog_states"].items()}
         else:
-            params["dialog_states"] = {}
-        metadata = params.get("metadata", {})
-        metadata["chat_id"] = metadata.get("chat_id", str(uuid.uuid4()))
-        metadata["turn_id"] = metadata.get("turn_id", 0) + 1
-        metadata["tool_response"] = {}
-        params["metadata"] = metadata
-        params["history"] = params.get("history", [])
-        if not params["history"]:
-            params["history"] = copy.deepcopy(chat_history_copy)
+            params["taskgraph"]["dialog_states"] = {}
+        params["metadata"]["turn_id"] += 1
+        params["metadata"]["tool_response"] = {}
+        if not params["memory"]["history"]:
+            params["memory"]["history"] = copy.deepcopy(chat_history_copy)
         else:
-            params["history"].append(chat_history_copy[-2])
-            params["history"].append(chat_history_copy[-1])
+            params["memory"]["history"].append(chat_history_copy[-2])
+            params["memory"]["history"].append(chat_history_copy[-1])
+        return text, chat_history_str, params
 
+    def check_skip_node(self, node_info: NodeInfo, params: Params):
+        cur_node_id = params["taskgraph"]["curr_node"]
+        if cur_node_id in params["taskgraph"]["node_limit"]:
+            if params["taskgraph"]["node_limit"][cur_node_id] <= 0:
+                return True
+        return False
 
-        ##### TaskGraph Chain
-        taskgraph_inputs = {
-            "text": text,
-            "chat_history_str": chat_history_str,
-            "parameters": params  ## TODO: different params for different components
-        }
-        dt = time.time()
-        taskgraph_chain = RunnableLambda(self.task_graph.get_node) | RunnableLambda(self.task_graph.postprocess_node)
-        node_info, params = taskgraph_chain.invoke(taskgraph_inputs)
-        params["timing"]["taskgraph"] = time.time() - dt
-        logger.info("=============node_info=============")
-        logger.info(f"The first node info is : {node_info}") # {'name': 'MessageWorker', 'attribute': {'value': 'If you are interested, you can book a calendly meeting https://shorturl.at/crFLP with us. Or, you can tell me your phone number, email address, and name; our expert will reach out to you soon.', 'direct': False, 'slots': {"<name>": {<attributes>}}}}
-        node_status = params.get("node_status", {})
-        params["node_status"] = node_status
+    def post_process_node(self, node_info: NodeInfo, params: Params, update_info:dict={}):
+        '''
+        update_info is a dict of
+            skipped = Optional[bool]
+        '''
+        curr_node = params["taskgraph"]["curr_node"]
+        node = PathNode(
+            node_id = curr_node,
+            is_skipped = update_info.get("is_skipped", False),
+            in_flow_stack=node_info.get("add_flow_stack", False),
+            nested_graph_node_value = None,
+            nested_graph_leaf_jump = None,
+        )
+        
+        params["taskgraph"]['path'].append(node)
 
-        with ls.trace(name=TraceRunName.TaskGraph, inputs={"taskgraph_inputs": taskgraph_inputs}) as rt:
-            rt.end(
-                outputs={
-                    "metadata": params.get("metadata"),
-                    "timing": params.get("timing", {}),
-                    "curr_node": {
-                        "id": params.get("curr_node"),
-                        "name": node_info.get("name"),
-                        "attribute": node_info.get("attribute")
-                    },
-                    "curr_global_intent": params.get("curr_pred_intent"),
-                    "dialog_states": params.get("dialog_states"),
-                    "node_status": params.get("node_status")}, 
-                metadata={"chat_id": metadata.get("chat_id"), "turn_id": metadata.get("turn_id")}
-            )
-
+        if curr_node in params["taskgraph"]["node_limit"]:
+            params["taskgraph"]["node_limit"][curr_node] -= 1
+        return params
+    
+    def handl_direct_node(self, node_info: NodeInfo, params: Params):
         # Direct response
-        node_attribute = node_info["attribute"]
-        if node_attribute["value"].strip():
-            if node_attribute.get("direct_response"):                    
-                return_response = {
-                    "answer": node_attribute["value"],
-                    "parameters": params
-                }
-                # Change the dialog_states from Class object to dict
-                if params.get("dialog_states"):
-                    params["dialog_states"] = {tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
-                if node_attribute.get("type", "") == "multiple-choice" and node_attribute.get("choice_list", []):
-                    return_response["choice_list"] = node_attribute["choice_list"]
-                return return_response
-
+        node_attribute = node_info["attributes"]
+        if node_attribute.get("value", "").strip() and node_attribute.get("direct"):
+            return_response = {
+                "answer": node_attribute["value"],
+                "parameters": params
+            }
+            # Change the dialog_states from Class object to dict
+            if params["taskgraph"].get("dialog_states"):
+                params["taskgraph"]["dialog_states"] = {
+                    tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
+                
+            if node_attribute.get("type", "") == "multiple-choice" and node_attribute.get("choice_list", []):
+                return_response["choice_list"] = node_attribute["choice_list"]
+            return True, return_response, params
+        return False, None, params
+    
+    def perform_node(self, node_info: NodeInfo, params: Params, text: str, chat_history_str: str, stream_type: StreamType, message_queue: janus.SyncQueue):
         # Tool/Worker
         user_message = ConvoMessage(history=chat_history_str, message=text)
-        orchestrator_message = OrchestratorMessage(message=node_info["attribute"]["value"], attribute=node_info["attribute"])
-        sys_instruct = "You are a " + self.product_kwargs["role"] + ". " + self.product_kwargs["user_objective"] + self.product_kwargs["builder_objective"] + self.product_kwargs["intro"] + self.product_kwargs.get("opt_instruct", "")
-        logger.info("=============sys_instruct=============")
-        logger.info(sys_instruct)
+        orchestrator_message = OrchestratorMessage(message=node_info["attributes"]["value"], attribute=node_info["attributes"])
+        sys_instruct = "You are a " + self.product_kwargs["role"] + ". " + \
+                            self.product_kwargs["user_objective"] + \
+                            self.product_kwargs["builder_objective"] + \
+                            self.product_kwargs["intro"] + \
+                            self.product_kwargs.get("opt_instruct", "")
         bot_config = BotConfig(
             bot_id=self.product_kwargs.get("bot_id", "default"),
             version=self.product_kwargs.get("version", "default"),
@@ -174,145 +175,85 @@ class AgentOrg:
             bot_config=bot_config,
             user_message=user_message, 
             orchestrator_message=orchestrator_message, 
-            trajectory=params["history"], 
+            trajectory=params["memory"]["history"], 
             message_flow=params.get("worker_response", {}).get("message_flow", ""), 
-            slots=params.get("dialog_states"),
-            metadata=params.get("metadata"),
+            slots=params["taskgraph"]["dialog_states"],
+            metadata=params["metadata"],
             is_stream=True if stream_type is not None else False,
             message_queue=message_queue
         )
         
-        response_state, params = self.env.step(node_info["id"], message_state, params)
-        
-        logger.info(f"{response_state=}")
-        logger.info(f"{params=}")
+        response_state, params = self.env.step(node_info["resource_id"], message_state, params)
+        return response_state, params
+    
+    def get_response(self, inputs: dict, stream_type: StreamType = None, message_queue: janus.SyncQueue = None) -> Dict[str, Any]:
+        text, chat_history_str, params = self.init_params(inputs)
+        ##### TaskGraph Chain
+        taskgraph_inputs = {
+            "text": text,
+            "chat_history_str": chat_history_str,
+            "parameters": params  ## TODO: different params for different components
+        }
 
-        tool_response = params.get("metadata", {}).get("tool_response", {})
-        params["metadata"]["tool_response"] = {}
+        counter_message_worker = 0
+        # TODO: when default worker is removed, remove also this.
+        counter_default_worker = 0
+        taskgraph_chain = RunnableLambda(self.task_graph.get_node) | RunnableLambda(self.task_graph.postprocess_node)
 
-        with ls.trace(name=TraceRunName.ExecutionResult, inputs={"message_state": message_state}) as rt:
-            rt.end(
-                outputs={"metadata": params.get("metadata"), **response_state}, 
-                metadata={"chat_id": metadata.get("chat_id"), "turn_id": metadata.get("turn_id")}
-            )
+        while True:
+            node_info, params = taskgraph_chain.invoke(taskgraph_inputs)
+            # Check if current node can be skipped
+            can_skip = self.check_skip_node(node_info, params)
+            if can_skip:
+                params = self.post_process_node(node_info, params, {"is_skipped": True})
+                continue
+            logger.info(f"The current node info is : {node_info}")
+            # Check current node attributes
+            if node_info["resource_id"] == self.env.name2id["DefaultWorker"]:
+                counter_message_worker += 1
+            elif node_info["resource_id"] == self.env.name2id["MessageWorker"]:
+                counter_default_worker += 1
+            # handle direct node
+            is_direct_node, direct_response, params = self.handl_direct_node(node_info, params)
+            if is_direct_node:
+                params = self.post_process_node(node_info, params)
+                return direct_response
+            # perform node
+            response_state, params = self.perform_node(node_info,
+                                                       params,
+                                                       text,
+                                                       chat_history_str,
+                                                       stream_type,
+                                                       message_queue)
+            params = self.post_process_node(node_info, params)
 
-        # ReAct framework to decide whether return to user or continue
-        FINISH = False
-        count = 0
-        max_count = 5
-        while not FINISH:
-            # if the last response is from the assistant with content(which means not from tool or worker but from function calling response), 
-            # then directly return the response otherwise it will continue to the next node but treat the previous response has been return to user.
-            if response_state.get("trajectory", []) \
-                and response_state["trajectory"][-1]["role"] == "assistant" \
-                and response_state["trajectory"][-1]["content"]: 
-                response_state["response"] = response_state["trajectory"][-1]["content"]
-                break
-            
-            # If the max_count is reached, then break the loop
-            if count >= max_count:
-                logger.info("Max count reached, break the ReAct loop")
-                break
-            count += 1
-            
             # If the current node is not complete, then no need to continue to the next node
-            node_status = params.get("node_status", {})
-            curr_node = params.get("curr_node", None)
-            status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
+            node_status = params["taskgraph"]["node_status"]
+            cur_node_id = params["taskgraph"]["curr_node"]
+            status = node_status.get(cur_node_id, StatusEnum.COMPLETE.value)
             if status == StatusEnum.INCOMPLETE.value:
                 break
+            # If the counter of message worker or counter of default worker == 1, break the loop
+            if counter_message_worker == 1 or counter_default_worker == 1:
+                break
 
-            node_info, params = taskgraph_chain.invoke(taskgraph_inputs)
-            logger.info("=============node_info=============")
-            logger.info(f"The while node info is : {node_info}")
-            message_state["orchestrator_message"] = OrchestratorMessage(message=node_info["attribute"]["value"], attribute=node_info["attribute"])
-            if node_info["id"] not in self.env.workers and node_info["id"] not in self.env.tools:
-                message_state = MessageState(
-                    sys_instruct=sys_instruct, 
-                    user_message=user_message, 
-                    orchestrator_message=orchestrator_message, 
-                    trajectory=params["history"], 
-                    message_flow=params.get("worker_response", {}).get("message_flow", ""), 
-                    slots=params.get("dialog_states"),
-                    metadata=params.get("metadata"),
-                    is_stream=True if stream_type is not None else False,
-                    message_queue=message_queue
-                )
-                
-                action, response_state, msg_history = self.env.planner.execute(message_state, params["history"])
-                params["history"] = msg_history
-                if action == RESPOND_ACTION_NAME:
-                    FINISH = True
-                else:
-                    tool_response = {}
-            else:
-                if node_info["id"] in self.env.tools:
-                    node_actions = [{"name": self.env.id2name[node_info["id"]], "arguments": self.env.tools[node_info["id"]]["execute"]().info}]
-                elif node_info["id"] in self.env.workers:
-                    node_actions = [{"name": self.env.id2name[node_info["id"]], "description": self.env.workers[node_info["id"]]["execute"]().description}]
-                
-                # If the Default Worker enters the loop, it is the default node. It may call the RAG worker and no information in the context (tool response) can be used.
-                if node_info["id"] == self.env.name2id["DefaultWorker"]:
-                    logger.info("Skip the DefaultWorker in ReAct framework because it is the default node and may call the RAG worker (context cannot be used)")
-                    action = RESPOND_ACTION_NAME
-                    FINISH = True
-                    break
-                # If the Message Worker enters the loop, ReAct framework cannot make a good decision between the MessageWorker and the RESPOND action.
-                elif node_info["id"] == self.env.name2id["MessageWorker"]:
-                    logger.info("Skip ReAct framework because it is hard to distinguish between the MessageWorker and the RESPOND action")
-                    message_state["response"] = "" # clear the response cache generated from the previous steps in the same turn
-                    response_state, params = self.env.step(self.env.name2id["MessageWorker"], message_state, params)
-                    FINISH = True
-                    break
-                action_spaces = node_actions
-                response_msg = truncate_string(response_state.get("message_flow", "") or response_state.get("response", ""))
-                action_spaces.append({"name": RESPOND_ACTION_NAME, "arguments": {RESPOND_ACTION_FIELD_NAME: response_msg}})
-                truncated_params_history_str = format_truncated_chat_history(params["history"])
-                prompt = REACT_INSTRUCTION.format(
-                    conversation_record=truncated_params_history_str,
-                    available_tools=json.dumps(action_spaces),
-                    task=node_info["attribute"].get("task", "None"),
-                )
-                logger.info(f"React instruction: {prompt}")
-                messages: List[Dict[str, Any]] = [
-                    {"role": "system", "content": prompt}
-                ]
-                _, action, _ = self.generate_next_step(messages, text)
-                action_name_list = [action_space["name"] for action_space in action_spaces]
-                action_simi_score = [SequenceMatcher(None, action, action_name).ratio() for action_name in action_name_list]
-                action = action_name_list[action_simi_score.index(max(action_simi_score))]
-                logger.info("Predicted action: " + action)
-                if action == RESPOND_ACTION_NAME:
-                    FINISH = True
-                else:
-                    message_state["response"] = "" # clear the response cache generated from the previous steps in the same turn
-                    response_state, params = self.env.step(self.env.name2id[action], message_state, params)
-                    tool_response = params.get("metadata", {}).get("tool_response", {})
         if not response_state.get("response", ""):
-            logger.info("No response from the ReAct framework, do context generation")
-            tool_response = {}
+            logger.info("No response, do context generation")
             if stream_type is None:
                 response_state = ToolGenerator.context_generate(response_state)
             else:
                 response_state = ToolGenerator.stream_context_generate(response_state)
-
+            params["memory"]["tool_response"] = {}
+        
         response = response_state.get("response", "")
-        params["metadata"]["tool_response"] = {}
-        # TODO: params["metadata"]["worker"] is not serialization, make it empty for now
-        if params.get("dialog_states"):
-            params["dialog_states"] = {tool: [s.model_dump() for s in slots] for tool, slots in params["dialog_states"].items()}
-        params["metadata"]["worker"] = {}
-        params["tool_response"] = tool_response
-        output = {
+        if params["taskgraph"].get("dialog_states"):
+                params["taskgraph"]["dialog_states"] = {
+                    tool: [s.model_dump() for s in slots]
+                    for tool, slots in params["taskgraph"]["dialog_states"].items()
+                }
+        return {
             "answer": response,
             "parameters": params,
             "human-in-the-loop": params['metadata'].get('hitl', None),
         }
-
-        with ls.trace(name=TraceRunName.OrchestResponse) as rt:
-            rt.end(
-                outputs={"metadata": params.get("metadata"), **output},
-                metadata={"chat_id": metadata.get("chat_id"), "turn_id": metadata.get("turn_id")}
-            )
-
-        return output
+        
