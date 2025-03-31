@@ -65,12 +65,13 @@ class AgentOrg:
         params = inputs["parameters"]
 
         timing = Timing(
-            taskgraph=params.get("timing", {}).get("taskgraph", None)
+            taskgraph=params.get("metadata", {}).get("timing", {}).get("taskgraph", None)
         )
         metadata = Metadata(
             chat_id=params.get("metadata", {}).get("chat_id", str(uuid.uuid4())),
             turn_id=params.get("metadata", {}).get("turn_id", 0),
             hitl=params.get("metadata", {}).get("hitl", None),
+            timing=timing,
         )
         taskgraph = Taskgraph(
             dialog_states=params.get("taskgraph", {}).get("dialog_states", {}),
@@ -87,7 +88,6 @@ class AgentOrg:
             tool_response=params.get("memory", {}).get("tool_response", {}),
         )
         params = Params(
-            timing=timing,
             metadata=metadata,
             taskgraph=taskgraph,
             memory=memory
@@ -111,6 +111,8 @@ class AgentOrg:
         return text, chat_history_str, params
 
     def check_skip_node(self, node_info: NodeInfo, params: Params):
+        if not node_info["can_skipped"]:
+            return False
         cur_node_id = params["taskgraph"]["curr_node"]
         if cur_node_id in params["taskgraph"]["node_limit"]:
             if params["taskgraph"]["node_limit"][cur_node_id] <= 0:
@@ -192,16 +194,22 @@ class AgentOrg:
         taskgraph_inputs = {
             "text": text,
             "chat_history_str": chat_history_str,
-            "parameters": params  ## TODO: different params for different components
+            "parameters": params,  ## TODO: different params for different components
+            "allow_global_intent_switch": True,
         }
-
-        counter_message_worker = 0
-        # TODO: when default worker is removed, remove also this.
-        counter_default_worker = 0
         taskgraph_chain = RunnableLambda(self.task_graph.get_node) | RunnableLambda(self.task_graph.postprocess_node)
 
-        while True:
+        
+        counter_message_worker = 0
+        counter_default_worker = 0 # TODO: when default worker is removed, remove also this.
+        
+        n_node_performed = 0
+        max_n_node_performed = 5
+        while n_node_performed < max_n_node_performed:
+            taskgraph_start_time = time.time()
             node_info, params = taskgraph_chain.invoke(taskgraph_inputs)
+            taskgraph_inputs["allow_global_intent_switch"] = False
+            params["metadata"]["timing"]["taskgraph"] = time.time() - taskgraph_start_time
             # Check if current node can be skipped
             can_skip = self.check_skip_node(node_info, params)
             if can_skip:
@@ -210,9 +218,9 @@ class AgentOrg:
             logger.info(f"The current node info is : {node_info}")
             # Check current node attributes
             if node_info["resource_id"] == self.env.name2id["DefaultWorker"]:
-                counter_message_worker += 1
-            elif node_info["resource_id"] == self.env.name2id["MessageWorker"]:
                 counter_default_worker += 1
+            elif node_info["resource_id"] == self.env.name2id["MessageWorker"]:
+                counter_message_worker += 1
             # handle direct node
             is_direct_node, direct_response, params = self.handl_direct_node(node_info, params)
             if is_direct_node:
@@ -226,6 +234,7 @@ class AgentOrg:
                                                        stream_type,
                                                        message_queue)
             params = self.post_process_node(node_info, params)
+            n_node_performed += 1
 
             # If the current node is not complete, then no need to continue to the next node
             node_status = params["taskgraph"]["node_status"]
@@ -235,6 +244,8 @@ class AgentOrg:
                 break
             # If the counter of message worker or counter of default worker == 1, break the loop
             if counter_message_worker == 1 or counter_default_worker == 1:
+                break
+            if node_info["is_leaf"] is True:
                 break
 
         if not response_state.get("response", ""):
@@ -251,6 +262,7 @@ class AgentOrg:
                     tool: [s.model_dump() for s in slots]
                     for tool, slots in params["taskgraph"]["dialog_states"].items()
                 }
+        
         return {
             "answer": response,
             "parameters": params,

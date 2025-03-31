@@ -95,6 +95,7 @@ class Metadata(TypedDict):
     chat_id: str
     turn_id: int
     hitl: Optional[str]
+    timing: Timing
 
 class Taskgraph(TypedDict):
     dialog_states: dict[str, Any]
@@ -111,7 +112,6 @@ class Memory(TypedDict):
     tool_response: dict
 
 class Params(TypedDict):
-    timing: Timing
     metadata: Metadata
     taskgraph: Taskgraph
     memory: Memory
@@ -119,5 +119,7 @@ class Params(TypedDict):
 class NodeInfo(TypedDict):
     resource_id: str
     resource_name: str
+    can_skipped: bool
+    is_leaf: bool
     attributes: dict[str, Any]
-    add_flow_stack: Optional[bool] = False
+    add_flow_stack: Optional[bool]
