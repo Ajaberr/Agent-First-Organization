@@ -53,9 +53,7 @@ class DefaulResourceInitializer(BaseResourceInitializer):
     @staticmethod
     def init_workers(workers):
         worker_registry = {}
-        available_workers = [worker for worker in workers if worker["name"] != DEFAULT_WORKER["name"]]
-        all_workers = [DEFAULT_WORKER] + available_workers if available_workers else [DEFAULT_WORKER]
-        for worker in all_workers:
+        for worker in workers:
             worker_id = worker["id"]
             name = worker["name"]
             path = worker["path"]
@@ -104,7 +102,6 @@ class Env():
             params["taskgraph"]["node_status"][current_node] = response_state.get("status", StatusEnum.COMPLETE.value)
                 
         elif id in self.workers:
-            message_state["metadata"]["worker"] = self.workers
             logger.info(f"{self.workers[id]['name']} worker selected")
             worker: BaseWorker = self.workers[id]["execute"]()
             # If the worker need to do the slotfilling, then it should have this method

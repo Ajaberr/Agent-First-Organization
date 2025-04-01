@@ -101,7 +101,7 @@ class Taskgraph(TypedDict):
     dialog_states: dict[str, Any]
     path: list[PathNode]
     curr_node: Optional[str]
-    curr_pred_intent: Optional[str]
+    intent: Optional[str]
     node_limit: dict[str, int]
     nlu_records: list
     node_status: dict[str, StatusEnum]

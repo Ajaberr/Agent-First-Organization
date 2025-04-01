@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 from difflib import SequenceMatcher
 
 from langchain_core.runnables import RunnableLambda
-import langsmith as ls
 from openai import OpenAI
 from langchain_openai import ChatOpenAI
 
@@ -201,7 +200,7 @@ class AgentOrg:
 
         
         counter_message_worker = 0
-        counter_default_worker = 0 # TODO: when default worker is removed, remove also this.
+        counter_planner = 0 # TODO: when planner is re-implemented, remove this.
         
         n_node_performed = 0
         max_n_node_performed = 5
@@ -217,8 +216,8 @@ class AgentOrg:
                 continue
             logger.info(f"The current node info is : {node_info}")
             # Check current node attributes
-            if node_info["resource_id"] == self.env.name2id["DefaultWorker"]:
-                counter_default_worker += 1
+            if node_info["resource_id"] == "planner":
+                counter_planner += 1
             elif node_info["resource_id"] == self.env.name2id["MessageWorker"]:
                 counter_message_worker += 1
             # handle direct node
@@ -243,7 +242,7 @@ class AgentOrg:
             if status == StatusEnum.INCOMPLETE.value:
                 break
             # If the counter of message worker or counter of default worker == 1, break the loop
-            if counter_message_worker == 1 or counter_default_worker == 1:
+            if counter_message_worker == 1 or counter_planner == 1:
                 break
             if node_info["is_leaf"] is True:
                 break
