@@ -174,7 +174,7 @@ class AgentOrg:
             "text": text,
             "chat_history_str": chat_history_str,
             "parameters": params,  ## TODO: different params for different components
-            "allow_global_intent_switch": True,
+            "allow_global_intent_switch": True, # ensure global intent changing happends only in the first get_node.
         }
         taskgraph_chain = RunnableLambda(self.task_graph.get_node) | RunnableLambda(self.task_graph.postprocess_node)
 

@@ -84,6 +84,9 @@ class TaskGraph(TaskGraphBase):
         return node
 
     def jump_to_node(self, pred_intent, intent_idx, curr_node):
+        """
+        Jump to a node based on the intent
+        """
         logger.info(f"pred_intent in jump_to_node is {pred_intent}")
         try:
             candidates_nodes = [self.intents[pred_intent][intent_idx]]
@@ -119,6 +122,9 @@ class TaskGraph(TaskGraphBase):
 
     
     def _get_node(self, sample_node, params: Params, intent=None) -> Tuple[NodeInfo, Params]:
+        """
+        Get the output format (NodeInfo, Params) that get_node should return
+        """
         logger.info(f"available_intents in _get_node: {params['taskgraph']['available_global_intents']}")
         logger.info(f"intent in _get_node: {intent}")
         node_info = self.graph.nodes[sample_node]
@@ -162,6 +168,10 @@ class TaskGraph(TaskGraphBase):
         return found_pred_in_avil, real_intent, idx
 
     def get_current_node(self, params: Params):
+        """
+        Get current node
+        If current node is unknown, use start node
+        """
         curr_node = params["taskgraph"].get("curr_node", None)
         if not curr_node or curr_node not in self.graph.nodes:
             curr_node = self.start_node
@@ -172,6 +182,9 @@ class TaskGraph(TaskGraphBase):
         return curr_node, params
     
     def get_available_global_intents(self, params: Params):
+        """
+        Get available global intents
+        """
         available_global_intents = params["taskgraph"].get("available_global_intents", [])
         if not available_global_intents:
             available_global_intents = copy.deepcopy(self.intents)
@@ -181,6 +194,9 @@ class TaskGraph(TaskGraphBase):
         return available_global_intents
     
     def update_node_limit(self, params: Params):
+        """
+        Update the node_limit in params which will be used to check if we can skip the node or not
+        """
         old_node_limit = params["taskgraph"].get("node_limit", {})
         node_limit = {}
         for node in self.graph.nodes.data():
@@ -191,6 +207,9 @@ class TaskGraph(TaskGraphBase):
         return params
 
     def get_local_intent(self, curr_node, params: Params):
+        """
+        Get the local intent of a current node
+        """
         candidates_intents = collections.defaultdict(list)
         for u, v, data in self.graph.out_edges(curr_node, data=True):
             intent = data.get("intent")
@@ -204,6 +223,9 @@ class TaskGraph(TaskGraphBase):
 
     
     def get_last_flow_stack_node(self, params: Params):
+        """
+        Get the last flow stack node from path
+        """
         path = params["taskgraph"]["path"]
         for i in range(len(path) - 1, -1, -1):
             if path[i]["in_flow_stack"]:
@@ -212,6 +234,9 @@ class TaskGraph(TaskGraphBase):
         return None
     
     def handle_multi_step_node(self, curr_node, params: Params) -> Tuple[bool, dict, Params]:
+        """
+        In case of a node having status == STAY, returned directly the same node
+        """
         node_status = params["taskgraph"].get("node_status", {})
         logger.info(f"node_status: {node_status}")
         status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
@@ -224,19 +249,21 @@ class TaskGraph(TaskGraphBase):
         return False, {}, params
     
     def handle_incomplete_node(self, curr_node, params: Params) -> Tuple[bool, dict, Params]:
+        """
+        If node is incomplete, return directly the node
+        """
         node_status = params["taskgraph"].get("node_status", {})
         status = node_status.get(curr_node, StatusEnum.COMPLETE.value)
         if status == StatusEnum.INCOMPLETE.value:
             logger.info(f"no local or global intent found, the current node is not complete")
-            node_info = {
-                "id": self.graph.nodes[curr_node]["resource"]["id"],
-                "name": self.graph.nodes[curr_node]["resource"]["name"],
-                "attribute": self.graph.nodes[curr_node]["attribute"]
-            }
+            node_info, params = self._get_node(curr_node, params)
             return True, node_info, params
         return False, {}, params
     
     def global_intent_prediction(self, curr_node, params: Params, available_global_intents, excluded_intents) -> Tuple[bool, str, dict, Params]:
+        """
+        Do global intent prediction
+        """
         candidate_intents = copy.deepcopy(available_global_intents)
         candidate_intents = {k: v for k, v in candidate_intents.items() if k not in excluded_intents}
         pred_intent = None
@@ -278,6 +305,9 @@ class TaskGraph(TaskGraphBase):
         return False, {}, params
     
     def local_intent_prediction(self, curr_node, params: Params, curr_local_intents) -> Tuple[bool, dict, Params]:
+        """
+        Do local intent prediction
+        """
         curr_local_intents_w_unsure = copy.deepcopy(curr_local_intents)
         curr_local_intents_w_unsure[self.unsure_intent.get("intent")] = \
             curr_local_intents_w_unsure.get(self.unsure_intent.get("intent"), [self.unsure_intent])
@@ -299,6 +329,9 @@ class TaskGraph(TaskGraphBase):
         return False, {}, params
     
     def handle_unknown_intent(self, curr_node, params: Params) -> Tuple[dict, Params]:
+        """
+        If unknown intent, call planner
+        """
         # if none of the available intents can represent user's utterance, transfer to the planner to let it decide for the next step
         params["taskgraph"]["intent"] = None
         if params["taskgraph"]["nlu_records"]:
@@ -318,9 +351,13 @@ class TaskGraph(TaskGraphBase):
 
 
     def get_node(self, inputs):
+        """
+        Get the next node
+        """
         self.text = inputs["text"]
         self.chat_history_str = inputs["chat_history_str"]
         params: Params = inputs["parameters"]
+        # boolean to check if we allow global intent switch or not.
         allow_global_intent_switch = inputs["allow_global_intent_switch"]
         params["taskgraph"]["nlu_records"] = []
 
