@@ -14,17 +14,10 @@ from langchain_core.runnables import RunnableLambda
 from arklex.orchestrator.task_graph import TaskGraph
 from arklex.env.tools.utils import ToolGenerator
 from arklex.types import EventType, StreamType
-from arklex.utils.graph_state import (ConvoMessage, NodeInfo,
-                                      OrchestratorMessage,
-                                      MessageState, PathNode,
-                                      StatusEnum,
-                                      BotConfig,
-                                      Slot,
-                                      Timing,
-                                      Metadata,
-                                      Taskgraph,
-                                      Memory,
-                                      Params)
+from arklex.utils.graph_state import (ConvoMessage, NodeInfo, OrchestratorMessage,
+                                      MessageState, PathNode, StatusEnum,
+                                      BotConfig, Slot, Timing, Metadata,
+                                      Taskgraph, Memory, Params)
 from arklex.utils.utils import format_chat_history
 
 
@@ -254,4 +247,3 @@ class AgentOrg:
             "parameters": params,
             "human-in-the-loop": params['metadata'].get('hitl', None),
         }
-        
