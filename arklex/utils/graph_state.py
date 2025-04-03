@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, Any, Optional, Union, List
+from typing import TypedDict, Any, Annotated, Optional, Union, List
 import janus
 from pydantic import BaseModel
 from enum import Enum
@@ -78,3 +78,48 @@ class MessageState(TypedDict):
     # stream
     is_stream: bool
     message_queue: janus.SyncQueue
+
+
+class Timing(TypedDict):
+    taskgraph: Optional[float]
+
+class PathNode(TypedDict):
+    node_id: str
+    is_skipped: bool
+    in_flow_stack: bool
+    nested_graph_node_value: Optional[str]
+    nested_graph_leaf_jump: Optional[str]
+
+
+class Metadata(TypedDict):
+    chat_id: str
+    turn_id: int
+    hitl: Optional[str]
+    timing: Timing
+
+class Taskgraph(TypedDict):
+    dialog_states: dict[str, Any]
+    path: list[PathNode]
+    curr_node: Optional[str]
+    intent: Optional[str]
+    node_limit: dict[str, int]
+    nlu_records: list
+    node_status: dict[str, StatusEnum]
+    available_global_intents: list
+
+class Memory(TypedDict):
+    history: list[dict[str, Any]]
+    tool_response: dict
+
+class Params(TypedDict):
+    metadata: Metadata
+    taskgraph: Taskgraph
+    memory: Memory
+
+class NodeInfo(TypedDict):
+    resource_id: str
+    resource_name: str
+    can_skipped: bool
+    is_leaf: bool
+    attributes: dict[str, Any]
+    add_flow_stack: Optional[bool]

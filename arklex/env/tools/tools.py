@@ -154,14 +154,14 @@ class Tool:
         max_tries = 3
         while max_tries > 0 and "error" in response:
             chat_history_str = format_chat_history(state["trajectory"])
-            slots : list[Slot] = self.slotfillapi.execute(self.slots, chat_history_str, state["metadata"])
+            slots : list[Slot] = self.slotfillapi.execute(self.slots, chat_history_str)
             logger.info(f'{slots=}')
             if not all([slot.value and slot.verified for slot in slots if slot.required]):
                 for slot in slots:
                     # if there is extracted slots values but haven't been verified
                     if slot.value and not slot.verified:
                         # check whether it verified or not
-                        verification_needed, thought = self.slotfillapi.verify_needed(slot, chat_history_str, state["metadata"])
+                        verification_needed, thought = self.slotfillapi.verify_needed(slot, chat_history_str)
                         if verification_needed:
                             response = slot.prompt + "The reason is: " + thought
                             break

@@ -139,9 +139,11 @@ class FunctionCallingPlanner:
         return EnvResponse(observation=observation)
     
     def execute(self, msg_state: MessageState, msg_history):
-        msg_history, action, response = self.plan(msg_state, msg_history)
-        msg_state['response'] = response
-        return action, msg_state, msg_history
+        # TODO: fix the logic for the planner
+        # msg_history, action, response = self.plan(msg_state, msg_history)
+        # msg_state['response'] = response
+        # return action, msg_state, msg_history
+        return None, msg_state, msg_history
 
 
 def convert_to_gemini_tools(tools):

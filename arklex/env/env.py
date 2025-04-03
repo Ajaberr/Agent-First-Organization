@@ -8,7 +8,7 @@ from functools import partial
 from arklex.env.tools.tools import Tool
 from arklex.env.workers.worker import BaseWorker
 from arklex.env.planner.function_calling import FunctionCallingPlanner
-from arklex.utils.graph_state import StatusEnum
+from arklex.utils.graph_state import Params, StatusEnum
 from arklex.orchestrator.NLU.nlu import SlotFilling
 
 
@@ -53,9 +53,7 @@ class DefaulResourceInitializer(BaseResourceInitializer):
     @staticmethod
     def init_workers(workers):
         worker_registry = {}
-        available_workers = [worker for worker in workers if worker["name"] != DEFAULT_WORKER["name"]]
-        all_workers = [DEFAULT_WORKER] + available_workers if available_workers else [DEFAULT_WORKER]
-        for worker in all_workers:
+        for worker in workers:
             worker_id = worker["id"]
             name = worker["name"]
             path = worker["path"]
@@ -91,20 +89,19 @@ class Env():
     def initialize_slotfillapi(self, slotsfillapi):
         return SlotFilling(slotsfillapi)
 
-    def step(self, id, message_state, params):
+    def step(self, id, message_state, params: Params):
         if id in self.tools:
             logger.info(f"{self.tools[id]['name']} tool selected")
             tool: Tool = self.tools[id]["execute"]()
             # slotfilling is in the basetoool class
             tool.init_slotfilling(self.slotfillapi)
             response_state = tool.execute(message_state, **self.tools[id]["fixed_args"])
-            params["history"] = response_state.get("trajectory", [])
-            params["dialog_states"] = response_state.get("slots", [])
-            current_node = params.get("curr_node")
-            params["node_status"][current_node] = response_state.get("status", StatusEnum.COMPLETE.value)
+            params["memory"]["history"] = response_state.get("trajectory", [])
+            params["taskgraph"]["dialog_states"] = response_state.get("slots", [])
+            current_node = params['taskgraph'].get("curr_node")
+            params["taskgraph"]["node_status"][current_node] = response_state.get("status", StatusEnum.COMPLETE.value)
                 
         elif id in self.workers:
-            message_state["metadata"]["worker"] = self.workers
             logger.info(f"{self.workers[id]['name']} worker selected")
             worker: BaseWorker = self.workers[id]["execute"]()
             # If the worker need to do the slotfilling, then it should have this method
@@ -112,17 +109,17 @@ class Env():
                 worker.init_slotfilling(self.slotfillapi)
             response_state = worker.execute(message_state)
             call_id = str(uuid.uuid4())
-            params["history"].append({'content': None, 'role': 'assistant', 'tool_calls': [{'function': {'arguments': "{}", 'name': self.id2name[id]}, 'id': call_id, 'type': 'function'}], 'function_call': None})
-            params["history"].append({
+            params["memory"]["history"].append({'content': None, 'role': 'assistant', 'tool_calls': [{'function': {'arguments': "{}", 'name': self.id2name[id]}, 'id': call_id, 'type': 'function'}], 'function_call': None})
+            params["memory"]["history"].append({
                         "role": "tool",
                         "tool_call_id": call_id,
                         "name": self.id2name[id],
                         "content": response_state["response"] if "response" in response_state else response_state.get("message_flow", ""),
             })
-            params["node_status"][params.get("curr_node")] = response_state.get("status", StatusEnum.COMPLETE.value)
+            params["taskgraph"]["node_status"][params["taskgraph"].get("curr_node")] = response_state.get("status", StatusEnum.COMPLETE.value)
         else:
             logger.info("planner selected")
-            action, response_state, msg_history = self.planner.execute(message_state, params["history"])
+            action, response_state, msg_history = self.planner.execute(message_state, params["memory"]["history"])
         
         logger.info(f"Response state from {id}: {response_state}")
         return response_state, params

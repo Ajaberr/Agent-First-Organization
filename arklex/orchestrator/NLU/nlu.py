@@ -2,8 +2,6 @@ import requests
 import logging
 from dotenv import load_dotenv
 
-import langsmith as ls
-
 from arklex.utils.model_config import MODEL
 from arklex.utils.trace import TraceRunName
 from arklex.utils.graph_state import Slots, Slot
@@ -17,7 +15,7 @@ class NLU:
     def __init__(self, url):
         self.url = url
 
-    def execute(self, text:str, intents:dict, chat_history_str:str, metadata:dict) -> str:
+    def execute(self, text:str, intents:dict, chat_history_str:str) -> str:
         logger.info(f"candidates intents of NLU: {intents}")
         data = {
             "text": text,
@@ -40,11 +38,6 @@ class NLU:
             pred_intent = nlu_api.predict(**data)
             logger.info(f"pred_intent is {pred_intent}")
 
-        with ls.trace(name=TraceRunName.NLU, inputs=data) as rt:
-            rt.end(
-                outputs={"pred_intent": pred_intent},
-                metadata={"chat_id": metadata.get("chat_id"), "turn_id": metadata.get("turn_id")}
-            )
         return pred_intent
     
 
@@ -52,7 +45,7 @@ class SlotFilling:
     def __init__(self, url):
         self.url = url
 
-    def verify_needed(self, slot: Slot, chat_history_str:str, metadata: dict) -> Slot:
+    def verify_needed(self, slot: Slot, chat_history_str:str) -> Slot:
         logger.info(f"verify slot: {slot}")
         data = {
             "slot": slot.model_dump(),
@@ -78,7 +71,7 @@ class SlotFilling:
 
         return verification_needed, thought
 
-    def execute(self, slots:list, chat_history_str:str, metadata: dict) -> dict:
+    def execute(self, slots:list, chat_history_str:str) -> dict:
         logger.info(f"extracted slots: {slots}")
         if not slots: return []
         
@@ -101,9 +94,4 @@ class SlotFilling:
             pred_slots = slotfilling_api.predict(**data).slots
             # pred_slots = [Slot(**pred_slot) for pred_slot in pred_slots]
             logger.info(f"pred_slots is {pred_slots}")
-        with ls.trace(name=TraceRunName.SlotFilling, inputs=data) as rt:
-            rt.end(
-                outputs=pred_slots,
-                metadata={"chat_id": metadata.get("chat_id"), "turn_id": metadata.get("turn_id")}
-            )
         return pred_slots
