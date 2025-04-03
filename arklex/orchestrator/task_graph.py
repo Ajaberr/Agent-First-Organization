@@ -103,24 +103,6 @@ class TaskGraph(TaskGraphBase):
             next_intent = list(self.graph.in_edges(curr_node, data="intent"))[0][2]
         return next_node, next_intent
     
-    def randomly_move_to_next_node(self, curr_node):
-        # randomly choose one sample from candidate samples
-        # if curr_node does not have next connected nodes -> return curr_node
-        candidate_samples = []
-        candidates_nodes_weights = []
-        for out_edge in self.graph.out_edges(curr_node, data=True):
-            if out_edge[2]["intent"] == "none":
-                candidate_samples.append(out_edge[1])
-                candidates_nodes_weights.append(out_edge[2]["attribute"]["weight"])
-        if candidate_samples:
-            # randomly choose one sample from candidate samples
-            next_node = np.random.choice(candidate_samples, p=normalize(candidates_nodes_weights))
-        else:  # leaf node + the node without None intents
-            next_node = curr_node
-
-        return next_node
-
-    
     def _get_node(self, sample_node, params: Params, intent=None) -> Tuple[NodeInfo, Params]:
         """
         Get the output format (NodeInfo, Params) that get_node should return
@@ -293,7 +275,18 @@ class TaskGraph(TaskGraphBase):
 
     
     def handle_random_next_node(self, curr_node, params: Params) -> Tuple[bool, dict, Params]:
-        next_node = self.randomly_move_to_next_node(curr_node)
+        candidate_samples = []
+        candidates_nodes_weights = []
+        for out_edge in self.graph.out_edges(curr_node, data=True):
+            if out_edge[2]["intent"] == "none":
+                candidate_samples.append(out_edge[1])
+                candidates_nodes_weights.append(out_edge[2]["attribute"]["weight"])
+        if candidate_samples:
+            # randomly choose one sample from candidate samples
+            next_node = np.random.choice(candidate_samples, p=normalize(candidates_nodes_weights))
+        else:  # leaf node + the node without None intents
+            next_node = curr_node
+
         if next_node != curr_node:  # continue if curr_node is not leaf node, i.e. there is a actual next_node
             logger.info(f"curr_node: {next_node}")
             node_info, params = self._get_node(next_node, params)

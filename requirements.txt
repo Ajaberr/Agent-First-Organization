@@ -19,7 +19,7 @@ python-multipart==0.0.12
 selenium==4.26.1
 textual==0.85.2
 unstructured>=0.16.4
-unstructured-client==0.27.0
+unstructured-client==0.32.0
 watchfiles==0.24.0
 websockets==13.1
 faiss-cpu>=1.10.0
@@ -33,3 +33,4 @@ mysql-connector-python==8.3.0
 PyMySQL==1.1.0
 ShopifyAPI==12.7.0
 hubspot-api-client==11.1.0
+pydantic==2.10.3
