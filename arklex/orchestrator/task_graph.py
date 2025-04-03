@@ -262,7 +262,9 @@ class TaskGraph(TaskGraphBase):
             params["taskgraph"]["nlu_records"].append({"candidate_intents": candidate_intents, 
                                 "pred_intent": pred_intent, "no_intent": False, "global_intent": True})
             found_pred_in_avil, pred_intent, intent_idx = self._postprocess_intent(pred_intent, available_global_intents)
-            if found_pred_in_avil and pred_intent != self.unsure_intent.get("intent"):
+            # if found prediction and prediction is not unsure intent and current intent
+            # TODO: how to know if user want to proceed or going back to the initial node of the same global intent
+            if found_pred_in_avil and pred_intent != self.unsure_intent.get("intent") and pred_intent != params["taskgraph"]["intent"]:
                 params["taskgraph"]["intent"] = pred_intent
                 next_node, next_intent = self.jump_to_node(pred_intent, intent_idx, curr_node)
                 logger.info(f"curr_node: {next_node}")
