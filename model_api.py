@@ -57,9 +57,21 @@ signal.signal(signal.SIGTERM, lambda signum, frame: exit(0))
 
 
 def get_api_bot_response(args, history, user_text, parameters, env):
+    # Initialize nlu_records if not present
+    if 'taskgraph' not in parameters:
+        parameters['taskgraph'] = {}
+    if 'nlu_records' not in parameters['taskgraph']:
+        parameters['taskgraph']['nlu_records'] = []
+
     data = {"text": user_text, 'chat_history': history, 'parameters': parameters}
     orchestrator = AgentOrg(config=os.path.join(args.input_dir, "taskgraph.json"), env=env)
     result = orchestrator.get_response(data)
+
+    # Ensure nlu_records exists in the returned parameters
+    if 'taskgraph' not in result['parameters']:
+        result['parameters']['taskgraph'] = {}
+    if 'nlu_records' not in result['parameters']['taskgraph']:
+        result['parameters']['taskgraph']['nlu_records'] = []
 
     return result['answer'], result['parameters']
 
@@ -94,6 +106,18 @@ def predict(data: Dict):
     workers = data['workers']
     tools = data['tools']
     user_text = history[-1]['content']
+
+    # Initialize nlu_records if not present
+    if 'taskgraph' not in params:
+        params['taskgraph'] = {}
+    if 'nlu_records' not in params['taskgraph']:
+        params['taskgraph']['nlu_records'] = []
+
+    # Create args object with required fields
+    class Args:
+        def __init__(self):
+            self.input_dir = os.environ.get("DATA_DIR", "./examples/test")
+    args = Args()
 
     env = Env(
         tools = tools,

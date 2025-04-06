@@ -127,7 +127,10 @@ Resources:
 MessageWorker: The worker responsible for interacting with the user with predefined responses,
 RAGWorker: Answer the user's questions based on the company's internal documentations, such as the policies, FAQs, and product information,
 ProductWorker: Access the company's database to retrieve information about products, such as availability, pricing, and specifications,
-UserProfileWorker: Access the company's database to retrieve information about the user's preferences and history
+UserProfileWorker: Access the company's database to retrieve information about the user's preferences and history,
+CitationGeneratorWorker: Generates properly formatted citations for climate research papers, datasets, and other scientific resources in various citation styles (APA, MLA, Chicago, etc.),
+DatasetFinderWorker: Helps researchers find and access relevant climate research datasets based on their specific research questions, variables of interest, and technical requirements,
+ResearchCollaborationWorker: Helps climate researchers find suitable collaboration partners, research institutions, and funding opportunities for joint climate research projects
 
 Reasoning: This task is a high-level task that involves multiple sub-tasks such as asking for user's preference, providing product recommendations, answering questions about product or policy, and confirming user selections. Each sub-task requires different worker to complete. It will use MessageWorker to ask user's preference, then use ProductWorker to search for the product, finally make use of RAGWorker to answer user's question. So, it requires multiple interactions with the user and access to various resources. Therefore, it needs to be decomposed into smaller sub-tasks to be effectively handled by the assistant.
 Answer: 
@@ -141,7 +144,10 @@ Task: The current task is booking a broadway show ticket. The current node level
 Resources:
 DataBaseWorker: Access the company's database to retrieve information about ticket availability, pricing, and seating options. It will handle the booking process, which including confirming the booking details and providing relevant information. It can also handle the cancel process.
 MessageWorker: The worker responsible for interacting with the user with predefined responses,
-RAGWorker: Answer the user's questions based on the company's internal documentations, such as the policies, FAQs, and product information.
+RAGWorker: Answer the user's questions based on the company's internal documentations, such as the policies, FAQs, and product information,
+CitationGeneratorWorker: Generates properly formatted citations for climate research papers, datasets, and other scientific resources in various citation styles (APA, MLA, Chicago, etc.),
+DatasetFinderWorker: Helps researchers find and access relevant climate research datasets based on their specific research questions, variables of interest, and technical requirements,
+ResearchCollaborationWorker: Helps climate researchers find suitable collaboration partners, research institutions, and funding opportunities for joint climate research projects
 
 Reasoning: This task involves a single high-level action of booking a ticket for a broadway show. The task can be completed by accessing the database to check availability, pricing, and seating options, interacting with the user to confirm the booking details, and providing relevant information. Since it is a singular task that can be handled by the single resource without further decomposition, the answer is No.
 Answer: 
@@ -168,7 +174,10 @@ Resources:
 MessageWorker: The worker responsible for interacting with the user with predefined responses,
 RAGWorker: Answer the user's questions based on the company's internal documentations, such as the policies, FAQs, and product information,
 ProductWorker: Access the company's database to retrieve information about products, such as availability, pricing, and specifications,
-UserProfileWorker: Access the company's database to retrieve information about the user's preferences and history.
+UserProfileWorker: Access the company's database to retrieve information about the user's preferences and history,
+CitationGeneratorWorker: Generates properly formatted citations for climate research papers, datasets, and other scientific resources in various citation styles (APA, MLA, Chicago, etc.),
+DatasetFinderWorker: Helps researchers find and access relevant climate research datasets based on their specific research questions, variables of interest, and technical requirements,
+ResearchCollaborationWorker: Helps climate researchers find suitable collaboration partners, research institutions, and funding opportunities for joint climate research projects
 
 Thought: To help users find products effectively, the assistant should first get context information about the customer from CRM, such as purchase history, demographic information, preference metadata, inquire about specific preferences or requirements (e.g., brand, features, price range) specific for the request. Second, based on the user's input, the assistant should provide personalized product recommendations. Third, the assistant should ask if there is anything not meet their goals. Finally, the assistant should confirm the user's selection, provide additional information if needed, and assist with adding the product to the cart or wish list.
 Answer:
@@ -300,7 +309,10 @@ Resources:
     "MessageWorker": "The worker responsible for interacting with the user with predefined responses",
     "RAGWorker": "Answer the user's questions based on the company's internal documentations, such as the policies, FAQs, and product information",
     "ProductWorker": "Access the company's database to retrieve information about products, such as availability, pricing, and specifications",
-    "UserProfileWorker": "Access the company's database to retrieve information about the user's preferences and history"
+    "UserProfileWorker": "Access the company's database to retrieve information about the user's preferences and history",
+    "CitationGeneratorWorker": "Generates properly formatted citations for climate research papers, datasets, and other scientific resources in various citation styles (APA, MLA, Chicago, etc.)",
+    "DatasetFinderWorker": "Helps researchers find and access relevant climate research datasets based on their specific research questions, variables of interest, and technical requirements",
+    "ResearchCollaborationWorker": "Helps climate researchers find suitable collaboration partners, research institutions, and funding opportunities for joint climate research projects"
 }}
 Answer:
 ```json

@@ -1,66 +1,73 @@
 [
     {
-        "task_name": "Provide detailed information about specific robots including features and capabilities",
+        "task_name": "Provide information on climate research initiatives and outputs",
         "steps": [
-            "Use MessageWorker to ask the user for specific details about the robot they are interested in, such as model name or features they are curious about.",
-            "Use FaissRAGWorker to retrieve detailed information about the specified robot from the company's internal documents, focusing on features and capabilities.",
-            "Use MessageWorker to deliver the retrieved information to the user, ensuring that it addresses their specific inquiry about the robot.",
-            "Use MessageWorker to ask if the user needs further information or has additional questions about the robot.",
-            "If the user has additional questions, repeat steps 2 and 3. Otherwise, use MessageWorker to thank the user for their inquiry and offer further assistance if needed."
+            "Ask the user what specific information or aspect of climate research initiatives they are interested in.",
+            "Use the FaissRAGWorker to retrieve relevant information from the company's internal documentation based on the user's query.",
+            "Deliver the retrieved information to the user using the MessageWorker.",
+            "Ask the user if they need further details or have additional questions about climate research initiatives.",
+            "If the user has more queries, repeat steps 2-4. If not, confirm if they need assistance with anything else."
         ]
     },
     {
-        "task_name": "Assist users with purchasing or renting robots, including transaction processing",
+        "task_name": "Assist in locating and accessing comprehensive climate datasets",
         "steps": [
-            "Provide information about available robots, including options for purchasing or renting, using information from internal documentation.",
-            "Inquire if the user is interested in purchasing or renting a specific robot.",
-            "Confirm the user's choice and provide detailed information about the selected robot, including price, rental terms, and any other relevant policies.",
-            "Assist the user with the transaction process by answering any questions and providing guidance.",
-            "Ensure the transaction is completed successfully and confirm the user's satisfaction with the process."
+            "Inquire about the specific type of climate dataset the user is looking for, including any particular parameters or timeframes they are interested in.",
+            "Use the FaissRAGWorker to search the company's internal documentation and resources to locate datasets that match the user's criteria.",
+            "Present the user with a list of relevant datasets and provide a brief overview of each dataset's content and usage.",
+            "Ask the user if they need further details about any of the datasets or assistance in accessing them.",
+            "Guide the user on how to access or download the desired datasets, and offer additional support if needed."
         ]
     },
     {
-        "task_name": "Provide estimated delivery times for different robot models",
+        "task_name": "Provide assistance in understanding technical documentation related to climate research",
         "steps": [
-            "Provide estimated delivery times for different robot models"
+            "Inquire about the specific technical documentation or topic related to climate research that the user needs assistance with.",
+            "Use the FaissRAGWorker to search the company's internal documentation for relevant information on the specified topic.",
+            "Present the user with the information found and ask if it addresses their query or if further clarification is needed.",
+            "If further clarification is requested, provide additional details or context using the FaissRAGWorker, or direct the user to related resources.",
+            "Confirm if the user is satisfied with the information provided or if they have any additional questions or topics to explore."
         ]
     },
     {
-        "task_name": "Help users troubleshoot and resolve issues with their robots",
+        "task_name": "Guide users in utilizing computational tools for climate analysis",
         "steps": [
-            "Inquire about the specific issue the user is experiencing with their robot.",
-            "Use the FaissRAGWorker to retrieve relevant troubleshooting information from the company's internal documentation based on the user's issue.",
-            "Provide the user with step-by-step instructions to resolve the issue using the MessageWorker.",
-            "Ask the user if the provided solution resolved their issue or if they need further assistance.",
-            "If the issue is not resolved, offer additional troubleshooting options or escalate the issue to a human representative."
+            "Initiate a conversation with the user to understand their specific needs regarding climate analysis using computational tools.",
+            "Use the FaissRAGWorker to retrieve relevant information from the company's internal documentation about available computational tools and resources for climate analysis.",
+            "Present the user with a list of computational tools and resources that match their needs, using the MessageWorker to deliver this information.",
+            "Ask the user if they need further clarification or have any specific queries about the tools, and offer to provide detailed guides or tutorials.",
+            "If the user requests more detailed information or assistance, utilize the FaissRAGWorker again to provide comprehensive guidance or direct them to technical documentation.",
+            "Confirm if the user is satisfied with the assistance provided or if they need additional help, using the MessageWorker to ensure clear communication."
         ]
     },
     {
-        "task_name": "Guide users through the setup and implementation process of their robots",
+        "task_name": "Resolve inquiries related to climate research and findings",
         "steps": [
-            "Greet the user and inquire about the specific robot or setup process they need assistance with to gather initial context.",
-            "Use the FaissRAGWorker to retrieve relevant setup and implementation information from the company's internal documentation based on the user's context and provide this information to the user.",
-            "Deliver the retrieved information to the user using the MessageWorker, ensuring clarity and relevance to the user's query.",
-            "Ask the user if they need further clarification or have additional questions regarding the setup process.",
-            "If the user has additional questions, repeat steps 2 and 3 to provide further assistance. Otherwise, confirm that the user is satisfied with the information provided and offer any final assistance needed."
+            "Receive the user's inquiry regarding climate research and findings.",
+            "Use the FaissRAGWorker to search and retrieve relevant information from the company's internal documentation related to the user's inquiry.",
+            "Deliver the retrieved information to the user using the MessageWorker.",
+            "Ask the user if they require further clarification or additional information on the topic.",
+            "If the user requests more information or has additional questions, repeat the process from step 2. If the user's inquiry is resolved, conclude the interaction with an offer to assist with any other questions."
         ]
     },
     {
-        "task_name": "Provide information on company policies, terms, and conditions",
+        "task_name": "Help users in creating and understanding interactive data visualizations",
         "steps": [
-            "Provide information on company policies, terms, and conditions"
+            "Inquire about the user's specific needs or goals regarding data visualizations, such as the type of data they want to visualize or the insights they wish to gain.",
+            "Utilize the FaissRAGWorker to search for and provide relevant documentation or resources from the LEAP initiative that can assist in creating and understanding interactive data visualizations.",
+            "Offer guidance on selecting appropriate tools and techniques for the desired data visualization, using the information retrieved in the previous step.",
+            "Ask the user if they need further clarification or assistance with specific aspects of the data visualization process.",
+            "Provide additional resources or connect the user with technical support if necessary, ensuring they have the support needed to complete their visualization task."
         ]
     },
     {
-        "task_name": "Assist users with maintenance scheduling and service inquiries for their robots",
+        "task_name": "Assist users in conducting predictive modeling for climate studies",
         "steps": [
-            "Greet the user and ask for the specific robot model or issue they are inquiring about to tailor the assistance.",
-            "Use FaissRAGWorker to retrieve information from internal documentation about maintenance schedules, common issues, and service options for the specified robot model.",
-            "Present the user with the information found, including recommended maintenance schedules and potential solutions for any issues described.",
-            "Inquire if the user needs assistance in scheduling a maintenance service or if they have further questions regarding the information provided.",
-            "If the user needs to schedule maintenance, guide them through the process by providing available dates and times, and confirm their appointment.",
-            "Confirm the details of the scheduled maintenance or provide additional assistance if the user has further inquiries.",
-            "Thank the user for using the service and offer further assistance if needed, ensuring they have all the information required for the next steps."
+            "Initiate the conversation by inquiring about the user's specific needs or questions related to predictive modeling for climate studies.",
+            "Use the FaissRAGWorker to access internal documentation and provide an overview of the resources available for predictive modeling in climate studies.",
+            "Ask the user if they need help understanding any specific aspect of predictive modeling or if they require guidance on using particular datasets or computational tools.",
+            "If the user has a specific question or requires further information, utilize the FaissRAGWorker to retrieve detailed answers from the internal documentation.",
+            "Offer additional assistance or resources, such as tutorials or case studies, and confirm if the user needs any further help with their predictive modeling task."
         ]
     }
 ]

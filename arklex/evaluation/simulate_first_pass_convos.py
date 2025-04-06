@@ -19,6 +19,12 @@ def conversation(model_api, goal, summary, model_params, synthetic_data_params, 
     history.append({'role': 'user', 'content': start_text})
     chatbot_history = []
 
+    # Initialize model_params with required fields
+    if 'taskgraph' not in model_params:
+        model_params['taskgraph'] = {}
+    if 'nlu_records' not in model_params['taskgraph']:
+        model_params['taskgraph']['nlu_records'] = []
+
     for i in range(synthetic_data_params['max_turns']):
         output = chatgpt_chatbot(history) 
         history.append({'role': 'assistant', 'content': output})
@@ -27,8 +33,13 @@ def conversation(model_api, goal, summary, model_params, synthetic_data_params, 
         answer = response_data["answer"]
         answer = answer.replace('\n', ' ')
         model_params = response_data["parameters"]
-        pred_intent = response_data['parameters']['nlu_records'][-1]['pred_intent']
-        history[-1]['intent'] = pred_intent
+        
+        # Safely access nlu_records
+        if 'taskgraph' in model_params and 'nlu_records' in model_params['taskgraph'] and model_params['taskgraph']['nlu_records']:
+            pred_intent = model_params['taskgraph']['nlu_records'][-1].get('pred_intent', '')
+            history[-1]['intent'] = pred_intent
+        else:
+            history[-1]['intent'] = ''
 
         history.append({'role': 'user', 'content': answer})
         chatbot_history.append({'role': 'user', 'content': answer})
@@ -38,7 +49,7 @@ def conversation(model_api, goal, summary, model_params, synthetic_data_params, 
     
     if not history[-1].get('goal_completetion', False):
         history.append({'goal_completetion': False})
-    history.append({'trajectory': model_params["history"]})
+    history.append({'trajectory': model_params.get("history", [])})
     return history
 
 def generate_conversations(model_api, goals, summary, model_params, synthetic_data_params, env_config):

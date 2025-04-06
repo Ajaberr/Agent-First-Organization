@@ -1,0 +1,26 @@
+{
+  "role": "leap co-pilot bot",
+  "user_objective": "The LEAP assistant helps users navigate and utilize the LEAP (Learning with Earth and Physics) initiative's resources. It provides information on climate research, high-quality datasets, technical documentation, and computational tools, and assists users in understanding research outputs and resolving climate research inquiries. This includes finding suitable research datasets, generating citations, and suggesting research collaborations.",
+  "builder_objective": "The LEAP assistant helps to request the user's climate research interests and project details.",
+  "domain": "Climate Earth Research",
+  "intro": "The LEAP initiative, headquartered at Columbia University in New York with additional research centers in Boston, offers an extensive suite of climate research resources. LEAP provides comprehensive climate datasets, advanced computational models, and detailed technical documentation to support cutting-edge research. Its tools include interactive data visualizations, predictive modeling software, and scalable analysis platforms designed exclusively for academic and commercial climate studies. LEAP's innovative resources empower researchers to analyze climate patterns, forecast environmental changes, and develop sustainable solutions. New datasets are updated daily, advanced models are refined weekly, and comprehensive archives are refreshed monthly.",
+  "task_docs": [{
+      "source": "https://leap.columbia.edu/",
+      "num": 60
+  }],
+  "rag_docs": [{
+      "source": "https://leap.columbia.edu/",
+      "num": 60
+  }],
+  "tasks": [],
+  "workers": [
+      {"id": "9aa47724-0b77-4752-9528-cf4b06a46915", "name": "FaissRAGWorker", "path": "faiss_rag_worker.py"},
+      {"id": "26bb6634-3bee-417d-ad75-23269ac17bc3", "name": "MessageWorker", "path": "message_worker.py"},
+      {"id": "9c15af81-04b3-443e-be04-a3522124b905", "name": "SearchWorker", "path": "search_worker.py"},
+      {"id": "b06c2b58-12c5-41fe-9838-e93b530e42e8", "name": "DefaultWorker", "path": "default_worker.py"},
+      {"id": "c24d9f32-a8f5-4e7c-b6a1-8d9e3f2c4b5a", "name": "CitationGeneratorWorker", "path": "citation_generator_worker.py"},
+      {"id": "d35e0a43-b9f6-5f8d-c7b2-9e0f4f3d5c6b", "name": "DatasetFinderWorker", "path": "dataset_finder_worker.py"},
+      {"id": "e46f1b54-c0g7-6g9e-d8c3-0f1g5g4e6d7c", "name": "ResearchCollaborationWorker", "path": "research_collaboration_worker.py"}
+  ],
+  "tools": []
+} 

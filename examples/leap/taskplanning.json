@@ -1,0 +1,87 @@
+[
+    {
+        "task_name": "Provide assistance in navigating and accessing relevant climate research datasets",
+        "steps": [
+            "Inquire about the user's specific research question, variables of interest, and any technical requirements for the dataset.",
+            "Use the FaissRAGWorker to find relevant datasets based on the user's requirements and provide a summary of the findings.",
+            "Present the list of relevant datasets to the user and ask if they need more detailed information about any of the datasets.",
+            "If the user requests more information, provide detailed descriptions or metadata of the selected datasets.",
+            "Ask the user if they need further assistance or if they are ready to access or download the datasets.",
+            "Provide instructions for accessing or downloading the selected datasets and offer additional help if needed."
+        ]
+    },
+    {
+        "task_name": "Provide help with understanding and locating technical documentation related to LEAP's resources",
+        "steps": [
+            "Inquire about the specific technical documentation or resource topic the user is interested in.",
+            "Use FaissRAGWorker to search and retrieve relevant technical documentation or information related to the user's query.",
+            "Present the retrieved documentation or information to the user, summarizing key points if necessary.",
+            "Ask the user if they need further clarification or additional information on the topic.",
+            "If the user requests more information, repeat the search with additional context or provide alternative resources if available.",
+            "Confirm if the user has found the information helpful or needs further assistance with other topics."
+        ]
+    },
+    {
+        "task_name": "Assist in resolving user inquiries regarding climate research outputs and methodologies",
+        "steps": [
+            "Use MessageWorker to greet the user and ask them to specify their inquiry about climate research outputs or methodologies.",
+            "Identify the nature of the user's inquiry to determine the most relevant resource. If the inquiry pertains to internal documentation, use FaissRAGWorker.",
+            "If FaissRAGWorker is applicable, retrieve information from internal documentations about climate research outputs or methodologies.",
+            "Utilize MessageWorker to deliver the retrieved information to the user in a clear and concise manner.",
+            "Ask the user if they need further clarification or have additional questions regarding the information provided.",
+            "If the user has more questions, repeat the process or direct them to more specialized resources if necessary. Otherwise, conclude the interaction."
+        ]
+    },
+    {
+        "task_name": "Provide assistance in generating accurate citations for LEAP datasets and tools",
+        "steps": [
+            "Inquire about the specific dataset or tool for which the user needs a citation, including any relevant details such as the dataset name or tool version.",
+            "Ask the user for the preferred citation style (e.g., APA, MLA, Chicago).",
+            "Use the MessageWorker to deliver the information collected to the relevant worker for citation generation, if available.",
+            "Confirm with the user if the generated citation meets their requirements and ask if they need any further assistance."
+        ]
+    },
+    {
+        "task_name": "Suggest potential research collaborations based on user interests and ongoing LEAP projects",
+        "steps": [
+            "Inquire about the user's research interests and areas of expertise.",
+            "Identify ongoing LEAP projects that align with the user's interests using the FaissRAGWorker.",
+            "Propose suitable collaborators or projects based on the identified LEAP projects.",
+            "Ask if the user would like to proceed with a suggested collaboration or explore more options.",
+            "Facilitate the collaboration process by providing contact information or next steps using the MessageWorker."
+        ]
+    },
+    {
+        "task_name": "Provide information and guidance on utilizing LEAP's computational tools and software for climate research",
+        "steps": [
+            "Greet the user and inquire about their specific needs or questions related to LEAP's computational tools and software.",
+            "Utilize the FaissRAGWorker to retrieve information from internal documentation about the relevant computational tools and software based on the user's inquiry.",
+            "Present the retrieved information to the user using the MessageWorker, and offer to provide more detailed guidance or answer specific questions.",
+            "Ask the user if they have specific technical challenges or require assistance with a particular tool or feature.",
+            "Use the FaissRAGWorker again to find solutions or troubleshooting steps for specific technical challenges mentioned by the user.",
+            "Deliver the solution or troubleshooting steps to the user via the MessageWorker and ask if there's anything else they need help with.",
+            "Offer additional assistance or information regarding other LEAP resources, such as datasets or research collaborations, if the user expresses interest."
+        ]
+    },
+    {
+        "task_name": "Assist in the creation and exploration of interactive data visualizations using LEAP's platforms",
+        "steps": [
+            "Inquire about the user's specific goals and needs for data visualization, including any particular datasets, variables, or insights they are interested in exploring.",
+            "Use the FaissRAGWorker to provide information on available datasets and tools within LEAP's platforms that are relevant to the user's stated goals.",
+            "Guide the user on accessing and utilizing these datasets and tools, providing any necessary technical documentation or tutorials via the MessageWorker.",
+            "Ask the user if they need assistance with specific features or functionalities within the data visualization tools.",
+            "Provide additional support or resources as needed, such as troubleshooting common issues or suggesting best practices for effective data visualization.",
+            "Confirm if the user has successfully created their desired visualizations and offer further assistance if required."
+        ]
+    },
+    {
+        "task_name": "Provide details on upcoming LEAP events, workshops, and educational opportunities",
+        "steps": [
+            "Inquire about the user's interests or specific topics they are interested in regarding LEAP events and educational opportunities.",
+            "Use the FaissRAGWorker to search the internal documentation for information on upcoming LEAP events and educational opportunities that match the user's interests.",
+            "Utilize the MessageWorker to provide the user with a curated list of relevant LEAP events, workshops, and educational opportunities based on their interests.",
+            "Ask the user if they need more information about any specific event or if they have any further questions regarding the opportunities provided.",
+            "Offer to assist the user with registering for an event or provide guidance on how to participate in the educational opportunities listed."
+        ]
+    }
+]

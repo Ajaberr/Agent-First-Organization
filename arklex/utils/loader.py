@@ -25,7 +25,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CHROME_DRIVER_VERSION = "125.0.6422.7"
+# Update ChromeDriver version to match installed Chrome version
+CHROME_DRIVER_VERSION = "134.0.6998.178"
 
 class URLObject:
     def __init__(self, id: str, url: str):
@@ -71,10 +72,22 @@ class Loader:
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-infobars")
         options.add_argument("--remote-debugging-pipe")
-        chrome_driver_path = Path(ChromeDriverManager(driver_version=CHROME_DRIVER_VERSION).install())
-        options.binary_location = str(chrome_driver_path.parent.absolute())
-        logger.info(f"chrome binary location: {options.binary_location}")
-        driver = webdriver.Chrome(options=options)
+        
+        # Install ChromeDriver
+        service = webdriver.ChromeService(ChromeDriverManager(driver_version=CHROME_DRIVER_VERSION).install())
+        logger.info(f"ChromeDriver service created")
+        
+        # Set Chrome binary location to default installation path on Windows
+        if os.name == 'nt':  # Windows
+            chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+            if os.path.exists(chrome_path):
+                options.binary_location = chrome_path
+                logger.info(f"Using Chrome binary at: {chrome_path}")
+            else:
+                logger.warning("Chrome binary not found at default location. Trying without explicit binary location.")
+        
+        # Create Chrome WebDriver with the new API
+        driver = webdriver.Chrome(service=service, options=options)
 
         docs: List[CrawledURLObject] = []
         for url_obj in url_objects:

@@ -8,7 +8,7 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Hello! I'm your Customer Service Assistant. How can I assist you with your inquiries today? Whether you need information about our products, services, or policies, or require help resolving an issue, I'm here to help!",
+                    "value": "Welcome to the LEAP Co-Pilot Bot! I'm here to help you explore and make the most of the LEAP initiative's resources. Whether you're looking for information on climate research, high-quality datasets, or need assistance with technical documentation and computational tools, I'm here to assist. How can I help you today?",
                     "task": "start message",
                     "directed": false
                 },
@@ -24,8 +24,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Can you please provide more details about the robot you are interested in, such as the model name or specific features you are curious about?",
-                    "task": "Use MessageWorker to ask the user for specific details about the robot they are interested in, such as model name or features they are curious about.",
+                    "value": "What specific aspect of climate research initiatives are you interested in learning more about?",
+                    "task": "Ask the user what specific information or aspect of climate research initiatives they are interested in.",
                     "directed": false
                 },
                 "limit": 1
@@ -40,7 +40,7 @@
                 },
                 "attribute": {
                     "value": "",
-                    "task": "Use FaissRAGWorker to retrieve detailed information about the specified robot from the company's internal documents, focusing on features and capabilities.",
+                    "task": "Use the FaissRAGWorker to retrieve relevant information from the company's internal documentation based on the user's query.",
                     "directed": false
                 },
                 "limit": 1
@@ -54,8 +54,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Here is the information on the robot you inquired about: [retrieved information].",
-                    "task": "Use MessageWorker to deliver the retrieved information to the user, ensuring that it addresses their specific inquiry about the robot.",
+                    "value": "Here is the information you requested about our climate research initiatives.",
+                    "task": "Deliver the retrieved information to the user using the MessageWorker.",
                     "directed": false
                 },
                 "limit": 1
@@ -69,8 +69,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Do you need any further information or have additional questions about the robot?",
-                    "task": "Use MessageWorker to ask if the user needs further information or has additional questions about the robot.",
+                    "value": "Do you need further details or have any additional questions about our climate research initiatives?",
+                    "task": "Ask the user if they need further details or have additional questions about climate research initiatives.",
                     "directed": false
                 },
                 "limit": 1
@@ -84,8 +84,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Thank you for your inquiry! If you need any more assistance, feel free to ask.",
-                    "task": "If the user has additional questions, repeat steps 2 and 3. Otherwise, use MessageWorker to thank the user for their inquiry and offer further assistance if needed.",
+                    "value": "If you have more questions, feel free to ask. Otherwise, is there anything else I can assist you with?",
+                    "task": "If the user has more queries, repeat steps 2-4. If not, confirm if they need assistance with anything else.",
                     "directed": false
                 },
                 "limit": 1
@@ -95,12 +95,12 @@
             "6",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Here are the available robots along with options for purchasing or renting according to our internal documentation.",
-                    "task": "Provide information about available robots, including options for purchasing or renting, using information from internal documentation.",
+                    "value": "Could you please specify the type of climate dataset you are looking for, including any particular parameters or timeframes?",
+                    "task": "Inquire about the specific type of climate dataset the user is looking for, including any particular parameters or timeframes they are interested in.",
                     "directed": false
                 },
                 "limit": 1
@@ -110,12 +110,12 @@
             "7",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Are you interested in purchasing or renting a specific robot from the list provided?",
-                    "task": "Inquire if the user is interested in purchasing or renting a specific robot.",
+                    "value": "",
+                    "task": "Use the FaissRAGWorker to search the company's internal documentation and resources to locate datasets that match the user's criteria.",
                     "directed": false
                 },
                 "limit": 1
@@ -125,12 +125,12 @@
             "8",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "You have selected [Robot Name]. Here are the details: Price, rental terms, and relevant policies.",
-                    "task": "Confirm the user's choice and provide detailed information about the selected robot, including price, rental terms, and any other relevant policies.",
+                    "value": "Here is a list of relevant datasets along with a brief overview of each one's content and usage.",
+                    "task": "Present the user with a list of relevant datasets and provide a brief overview of each dataset's content and usage.",
                     "directed": false
                 },
                 "limit": 1
@@ -144,8 +144,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Do you have any questions about the transaction process or need guidance?",
-                    "task": "Assist the user with the transaction process by answering any questions and providing guidance.",
+                    "value": "Do you need further details about any of these datasets or assistance in accessing them?",
+                    "task": "Ask the user if they need further details about any of the datasets or assistance in accessing them.",
                     "directed": false
                 },
                 "limit": 1
@@ -159,8 +159,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Has your transaction been completed successfully? Are you satisfied with the process?",
-                    "task": "Ensure the transaction is completed successfully and confirm the user's satisfaction with the process.",
+                    "value": "Here's how you can access or download the desired datasets. Please let me know if you need any more support.",
+                    "task": "Guide the user on how to access or download the desired datasets, and offer additional support if needed.",
                     "directed": false
                 },
                 "limit": 1
@@ -170,12 +170,12 @@
             "11",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Based on our internal documentation, the estimated delivery time for Model A is 3-5 business days, while Model B takes 5-7 business days.",
-                    "task": "Provide estimated delivery times for different robot models",
+                    "value": "Could you please specify the technical documentation or topic related to climate research you need help with?",
+                    "task": "Inquire about the specific technical documentation or topic related to climate research that the user needs assistance with.",
                     "directed": false
                 },
                 "limit": 1
@@ -185,12 +185,12 @@
             "12",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Could you please describe the specific issue you are experiencing with your robot?",
-                    "task": "Inquire about the specific issue the user is experiencing with their robot.",
+                    "value": "",
+                    "task": "Use the FaissRAGWorker to search the company's internal documentation for relevant information on the specified topic.",
                     "directed": false
                 },
                 "limit": 1
@@ -200,12 +200,12 @@
             "13",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "",
-                    "task": "Use the FaissRAGWorker to retrieve relevant troubleshooting information from the company's internal documentation based on the user's issue.",
+                    "value": "Here is the information I found on the topic you specified. Does this address your query, or do you need further clarification?",
+                    "task": "Present the user with the information found and ask if it addresses their query or if further clarification is needed.",
                     "directed": false
                 },
                 "limit": 1
@@ -215,12 +215,12 @@
             "14",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Here are the steps you can follow to resolve the issue: [Step-by-step instructions].",
-                    "task": "Provide the user with step-by-step instructions to resolve the issue using the MessageWorker.",
+                    "value": "",
+                    "task": "If further clarification is requested, provide additional details or context using the FaissRAGWorker, or direct the user to related resources.",
                     "directed": false
                 },
                 "limit": 1
@@ -234,8 +234,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Did the solution resolve your issue, or do you need further assistance?",
-                    "task": "Ask the user if the provided solution resolved their issue or if they need further assistance.",
+                    "value": "Are you satisfied with the information provided, or do you have any additional questions or topics you would like to explore?",
+                    "task": "Confirm if the user is satisfied with the information provided or if they have any additional questions or topics to explore.",
                     "directed": false
                 },
                 "limit": 1
@@ -249,8 +249,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "If the issue persists, I can offer additional troubleshooting options or connect you with one of our human representatives for further assistance.",
-                    "task": "If the issue is not resolved, offer additional troubleshooting options or escalate the issue to a human representative.",
+                    "value": "Hello! How can I assist you with your climate analysis needs today? Are there specific areas you are focusing on?",
+                    "task": "Initiate a conversation with the user to understand their specific needs regarding climate analysis using computational tools.",
                     "directed": false
                 },
                 "limit": 1
@@ -260,12 +260,12 @@
             "17",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Hello! How can I assist you today? Are you looking for help with a specific robot or setup process?",
-                    "task": "Greet the user and inquire about the specific robot or setup process they need assistance with to gather initial context.",
+                    "value": "",
+                    "task": "Use the FaissRAGWorker to retrieve relevant information from the company's internal documentation about available computational tools and resources for climate analysis.",
                     "directed": false
                 },
                 "limit": 1
@@ -275,12 +275,12 @@
             "18",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "",
-                    "task": "Use the FaissRAGWorker to retrieve relevant setup and implementation information from the company's internal documentation based on the user's context and provide this information to the user.",
+                    "value": "Based on your requirements, here are some tools and resources that might be helpful for your climate analysis.",
+                    "task": "Present the user with a list of computational tools and resources that match their needs, using the MessageWorker to deliver this information.",
                     "directed": false
                 },
                 "limit": 1
@@ -294,8 +294,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Based on your request, here is the information on setting up the robot you mentioned.",
-                    "task": "Deliver the retrieved information to the user using the MessageWorker, ensuring clarity and relevance to the user's query.",
+                    "value": "Do you need further clarification on any of these tools, or would you like detailed guides or tutorials?",
+                    "task": "Ask the user if they need further clarification or have any specific queries about the tools, and offer to provide detailed guides or tutorials.",
                     "directed": false
                 },
                 "limit": 1
@@ -305,12 +305,12 @@
             "20",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Do you need any further clarification or have additional questions about the setup process?",
-                    "task": "Ask the user if they need further clarification or have additional questions regarding the setup process.",
+                    "value": "",
+                    "task": "If the user requests more detailed information or assistance, utilize the FaissRAGWorker again to provide comprehensive guidance or direct them to technical documentation.",
                     "directed": false
                 },
                 "limit": 1
@@ -324,8 +324,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "If you have more questions, feel free to ask. Otherwise, I hope you are satisfied with the information provided. Let me know if there's anything else I can assist you with!",
-                    "task": "If the user has additional questions, repeat steps 2 and 3 to provide further assistance. Otherwise, confirm that the user is satisfied with the information provided and offer any final assistance needed.",
+                    "value": "Are you satisfied with the assistance provided? Is there anything else I can help you with?",
+                    "task": "Confirm if the user is satisfied with the assistance provided or if they need additional help, using the MessageWorker to ensure clear communication.",
                     "directed": false
                 },
                 "limit": 1
@@ -335,12 +335,12 @@
             "22",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "b06c2b58-12c5-41fe-9838-e93b530e42e8",
+                    "name": "DefaultWorker"
                 },
                 "attribute": {
-                    "value": "Here are the details of our company policies, terms, and conditions. Please let me know if you have any questions.",
-                    "task": "Provide information on company policies, terms, and conditions",
+                    "value": "What specific aspects of climate research are you interested in?",
+                    "task": "Receive the user's inquiry regarding climate research and findings.",
                     "directed": false
                 },
                 "limit": 1
@@ -350,12 +350,12 @@
             "23",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Hello! How can I assist you today? Could you please tell me the specific robot model or issue you're inquiring about?",
-                    "task": "Greet the user and ask for the specific robot model or issue they are inquiring about to tailor the assistance.",
+                    "value": "",
+                    "task": "Use the FaissRAGWorker to search and retrieve relevant information from the company's internal documentation related to the user's inquiry.",
                     "directed": false
                 },
                 "limit": 1
@@ -365,12 +365,12 @@
             "24",
             {
                 "resource": {
-                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
-                    "name": "FaissRAGWorker"
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "",
-                    "task": "Use FaissRAGWorker to retrieve information from internal documentation about maintenance schedules, common issues, and service options for the specified robot model.",
+                    "value": "Here is the information we have found regarding your inquiry on climate research.",
+                    "task": "Deliver the retrieved information to the user using the MessageWorker.",
                     "directed": false
                 },
                 "limit": 1
@@ -384,8 +384,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Based on the information I found, here are the recommended maintenance schedules and potential solutions for the issues you've described.",
-                    "task": "Present the user with the information found, including recommended maintenance schedules and potential solutions for any issues described.",
+                    "value": "Do you need further clarification or additional information on this topic?",
+                    "task": "Ask the user if they require further clarification or additional information on the topic.",
                     "directed": false
                 },
                 "limit": 1
@@ -399,8 +399,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Would you like assistance in scheduling a maintenance service, or do you have any further questions about the information provided?",
-                    "task": "Inquire if the user needs assistance in scheduling a maintenance service or if they have further questions regarding the information provided.",
+                    "value": "Is there anything else I can assist you with today?",
+                    "task": "If the user requests more information or has additional questions, repeat the process from step 2. If the user's inquiry is resolved, conclude the interaction with an offer to assist with any other questions.",
                     "directed": false
                 },
                 "limit": 1
@@ -414,8 +414,8 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Here are the available dates and times for scheduling your maintenance. Please let me know which one works best for you, and I'll confirm your appointment.",
-                    "task": "If the user needs to schedule maintenance, guide them through the process by providing available dates and times, and confirm their appointment.",
+                    "value": "Could you please tell me about your specific needs or goals for the data visualization? What type of data do you want to visualize, and what insights are you looking to gain?",
+                    "task": "Inquire about the user's specific needs or goals regarding data visualizations, such as the type of data they want to visualize or the insights they wish to gain.",
                     "directed": false
                 },
                 "limit": 1
@@ -425,12 +425,12 @@
             "28",
             {
                 "resource": {
-                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
-                    "name": "MessageWorker"
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
                 },
                 "attribute": {
-                    "value": "Your maintenance is scheduled for [Date] at [Time]. If you have any further inquiries, feel free to ask.",
-                    "task": "Confirm the details of the scheduled maintenance or provide additional assistance if the user has further inquiries.",
+                    "value": "I have found some resources from the LEAP initiative that might assist you in creating and understanding interactive data visualizations.",
+                    "task": "Utilize the FaissRAGWorker to search for and provide relevant documentation or resources from the LEAP initiative that can assist in creating and understanding interactive data visualizations.",
                     "directed": false
                 },
                 "limit": 1
@@ -444,8 +444,113 @@
                     "name": "MessageWorker"
                 },
                 "attribute": {
-                    "value": "Thank you for using our service! If you need any more assistance, don't hesitate to reach out. Have a great day!",
-                    "task": "Thank the user for using the service and offer further assistance if needed, ensuring they have all the information required for the next steps.",
+                    "value": "Based on the resources we found, I recommend using these tools and techniques for your data visualization needs.",
+                    "task": "Offer guidance on selecting appropriate tools and techniques for the desired data visualization, using the information retrieved in the previous step.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "30",
+            {
+                "resource": {
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
+                },
+                "attribute": {
+                    "value": "Do you need further clarification or assistance with any specific aspects of the data visualization process?",
+                    "task": "Ask the user if they need further clarification or assistance with specific aspects of the data visualization process.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "31",
+            {
+                "resource": {
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
+                },
+                "attribute": {
+                    "value": "If you need more help, I can provide additional resources or connect you with our technical support team to ensure you have the support needed to complete your visualization task.",
+                    "task": "Provide additional resources or connect the user with technical support if necessary, ensuring they have the support needed to complete their visualization task.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "32",
+            {
+                "resource": {
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
+                },
+                "attribute": {
+                    "value": "Hello! What specific needs or questions do you have regarding predictive modeling for climate studies?",
+                    "task": "Initiate the conversation by inquiring about the user's specific needs or questions related to predictive modeling for climate studies.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "33",
+            {
+                "resource": {
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
+                },
+                "attribute": {
+                    "value": "Based on our internal resources, we have comprehensive guides and tools available for predictive modeling in climate studies.",
+                    "task": "Use the FaissRAGWorker to access internal documentation and provide an overview of the resources available for predictive modeling in climate studies.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "34",
+            {
+                "resource": {
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
+                },
+                "attribute": {
+                    "value": "Do you need help understanding a specific aspect of predictive modeling, or guidance on using particular datasets or tools?",
+                    "task": "Ask the user if they need help understanding any specific aspect of predictive modeling or if they require guidance on using particular datasets or computational tools.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "35",
+            {
+                "resource": {
+                    "id": "9aa47724-0b77-4752-9528-cf4b06a46915",
+                    "name": "FaissRAGWorker"
+                },
+                "attribute": {
+                    "value": "Let me find the detailed answer for you from our internal documentation.",
+                    "task": "If the user has a specific question or requires further information, utilize the FaissRAGWorker to retrieve detailed answers from the internal documentation.",
+                    "directed": false
+                },
+                "limit": 1
+            }
+        ],
+        [
+            "36",
+            {
+                "resource": {
+                    "id": "26bb6634-3bee-417d-ad75-23269ac17bc3",
+                    "name": "MessageWorker"
+                },
+                "attribute": {
+                    "value": "Would you like additional resources like tutorials or case studies? Is there anything else you need help with?",
+                    "task": "Offer additional assistance or resources, such as tutorials or case studies, and confirm if the user needs any further help with their predictive modeling task.",
                     "directed": false
                 },
                 "limit": 1
@@ -457,7 +562,7 @@
             "0",
             "1",
             {
-                "intent": "User inquires about product information",
+                "intent": "User wants to access climate research information",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
@@ -522,7 +627,7 @@
             "0",
             "6",
             {
-                "intent": "User seeks assistance with product transactions",
+                "intent": "User is looking for high-quality climate datasets",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
@@ -587,10 +692,62 @@
             "0",
             "11",
             {
-                "intent": "User requires information on delivery timelines",
+                "intent": "User needs help with technical documentation",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "11",
+            "12",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "12",
+            "13",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "13",
+            "14",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "14",
+            "15",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
                     "definition": "",
                     "sample_utterances": []
                 }
@@ -598,77 +755,25 @@
         ],
         [
             "0",
-            "12",
-            {
-                "intent": "User wants to resolve an issue with a product",
-                "attribute": {
-                    "weight": 1,
-                    "pred": true,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "12",
-            "13",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "13",
-            "14",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "14",
-            "15",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "15",
             "16",
             {
-                "intent": "None",
+                "intent": "User wants to use computational tools for climate analysis",
                 "attribute": {
                     "weight": 1,
-                    "pred": false,
+                    "pred": true,
                     "definition": "",
                     "sample_utterances": []
                 }
             }
         ],
         [
-            "0",
+            "16",
             "17",
             {
-                "intent": "User asks for support on product implementation",
+                "intent": "None",
                 "attribute": {
                     "weight": 1,
-                    "pred": true,
+                    "pred": false,
                     "definition": "",
                     "sample_utterances": []
                 }
@@ -730,10 +835,62 @@
             "0",
             "22",
             {
-                "intent": "User seeks information on company policies",
+                "intent": "User has inquiries about climate research",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "22",
+            "23",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "23",
+            "24",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "24",
+            "25",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "25",
+            "26",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
                     "definition": "",
                     "sample_utterances": []
                 }
@@ -741,64 +898,12 @@
         ],
         [
             "0",
-            "23",
+            "27",
             {
-                "intent": "User requires support for ongoing maintenance",
+                "intent": "User seeks assistance with data visualizations",
                 "attribute": {
                     "weight": 1,
                     "pred": true,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "23",
-            "24",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "24",
-            "25",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "25",
-            "26",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
-                    "definition": "",
-                    "sample_utterances": []
-                }
-            }
-        ],
-        [
-            "26",
-            "27",
-            {
-                "intent": "None",
-                "attribute": {
-                    "weight": 1,
-                    "pred": false,
                     "definition": "",
                     "sample_utterances": []
                 }
@@ -829,22 +934,113 @@
                     "sample_utterances": []
                 }
             }
+        ],
+        [
+            "29",
+            "30",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "30",
+            "31",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "0",
+            "32",
+            {
+                "intent": "User is interested in predictive modeling",
+                "attribute": {
+                    "weight": 1,
+                    "pred": true,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "32",
+            "33",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "33",
+            "34",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "34",
+            "35",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
+        ],
+        [
+            "35",
+            "36",
+            {
+                "intent": "None",
+                "attribute": {
+                    "weight": 1,
+                    "pred": false,
+                    "definition": "",
+                    "sample_utterances": []
+                }
+            }
         ]
     ],
-    "role": "customer service assistant",
-    "user_objective": "The customer service assistant helps users with customer service inquiries. It can provide information about products, services, and policies, as well as help users resolve issues and complete transactions.",
-    "builder_objective": "The customer service assistant helps to request customer's contact information.",
-    "domain": "robotics and automation",
-    "intro": "Richtech Robotics's headquarter is in Las Vegas; the other office is in Austin. Richtech Robotics provide worker robots (ADAM, ARM, ACE), delivery robots (Matradee, Matradee X, Matradee L, Richie), cleaning robots (DUST-E SX, DUST-E MX) and multipurpose robots (skylark). Their products are intended for business purposes, but not for home purpose; the ADAM robot is available for purchase and rental for multiple purposes. This robot bartender makes tea, coffee and cocktails. Richtech Robotics also operate the world's first robot milk tea shop, ClouTea, in Las Vegas (www.cloutea.com), where all milk tea beverages are prepared by the ADAM robot. The delivery time will be one month for the delivery robot, 2 weeks for standard ADAM, and two months for commercial cleaning robot. ",
+    "role": "leap co-pilot bot",
+    "user_objective": "The LEAP assistant helps users navigate and utilize the LEAP (Learning with Arts and Physics) initiative\u00e2\u20ac\u2122s resources. It provides information on climate research, high-quality datasets, technical documentation, and computational tools, and assists users in understanding research outputs and resolving climate research inquiries.",
+    "builder_objective": "The LEAP assistant helps to request the user's climate research interests and project details.",
+    "domain": "Climate Earth Research",
+    "intro": "The LEAP initiative, headquartered at Columbia University in New York with additional research centers in Boston, offers an extensive suite of climate research resources. LEAP provides comprehensive climate datasets, advanced computational models, and detailed technical documentation to support cutting-edge research. Its tools include interactive data visualizations, predictive modeling software, and scalable analysis platforms designed exclusively for academic and commercial climate studies. LEAP\u00e2\u20ac\u2122s innovative resources empower researchers to analyze climate patterns, forecast environmental changes, and develop sustainable solutions. New datasets are updated daily, advanced models are refined weekly, and comprehensive archives are refreshed monthly.",
     "task_docs": [
         {
-            "source": "https://www.richtechrobotics.com/",
+            "source": "https://leap.columbia.edu/",
             "num": 20
         }
     ],
     "rag_docs": [
         {
-            "source": "https://www.richtechrobotics.com/",
+            "source": "https://leap.columbia.edu/",
             "num": 20
         }
     ],
