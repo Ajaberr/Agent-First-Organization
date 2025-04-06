@@ -34,4 +34,4 @@ To use these enhancements:
 2. Install dependencies with `pip install -r requirements.txt`
 3. Configure your API keys in a new `.env` file
 4. Use the LEAP configuration files to initialize the agent
-5. Run the agent with `python run.py --input-dir ./examples/climate_research`
+5. Run the agent with `python run.py --input-dir ./examples/leap`
