@@ -120,3 +120,36 @@ python run.py --input-dir ./examples/customer_service
       * `--model`: The openai model type used to synthesize user's utterance. Default is `gpt-4o`. You could change it to other models like `gpt-4o-mini`.
   
     📄 For more details, check out the [Evaluation README](https://github.com/arklexai/Agent-First-Organization/blob/main/arklex/evaluation/README.md).
+
+# Repository Changes
+
+This fork of the Agent-First-Organization repository includes several enhancements and additions:
+
+## Added Features
+
+### LEAP Agent
+- Added specialized LEAP agent for climate research applications
+- Enhanced agent capabilities for scientific research and collaboration
+
+### Configuration Files
+- Added `config.json` - Base configuration for the LEAP agent
+- Added `leap_enhanced_config.json` - Extended configuration with additional parameters for advanced use cases
+
+### Evaluation Framework
+- Implemented comprehensive evaluation capabilities
+- Added metrics tracking for agent performance
+- Includes goal completion rate tracking
+
+### TaskGraphs
+- Added enhanced TaskGraph functionality
+- Improved task planning and execution
+- Better coordination between specialized workers
+
+## Specialized Workers
+Added new workers for climate research:
+- Citation generator for academic references
+- Dataset finder for locating relevant climate data
+- Research collaboration assistant
+
+## Getting Started
+To use these enhancements, follow the standard installation procedures in the original repository documentation, then utilize the added configuration files for the LEAP agent functionality.
